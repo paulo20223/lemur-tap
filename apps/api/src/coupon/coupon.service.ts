@@ -15,9 +15,11 @@ import { AppError } from '../common/errors/app-error';
 /**
  * Coupon mini-game (spec/app/06, 11). Server-authoritative & idempotent.
  *
- * - start: lazily expires a stale active session, enforces the one-active-session
- *   invariant, requires energy >= couponSessionCost, debits the cost (never
- *   refunded), and creates a session with a server seed + start/expiry window.
+ * - start: settles any leftover round from a previous start (at most one, per the
+ *   partial unique index) — refunding its session cost since it never reached
+ *   finish() (so no reward was paid) — then requires energy >= couponSessionCost,
+ *   debits the cost, and creates a session with a server seed + start/expiry
+ *   window. Only a finished/rejected round consumes energy for good.
  * - finish: validates ownership / active status / finish window, recomputes the
  *   anti-cheat score ceiling from the ACTUAL server-measured elapsed, validates
  *   the self-reported score, credits the floored & capped reward via
@@ -37,25 +39,27 @@ export class CouponService {
     const now = Date.now();
 
     return this.prisma.$transaction(async (tx) => {
-      // Lazily expire a session whose finish window already elapsed: the player
-      // had their chance to finish, so its cost is NOT refunded.
-      await tx.couponGameSession.updateMany({
+      // Settle any leftover round from a previous start (the partial unique index
+      // guarantees at most one active row). Neither path reached finish(), so no
+      // reward was paid — refund the session cost in BOTH cases. Energy is spent
+      // ONLY on starting a round, so a refunded ticket is simply re-charged below
+      // (net-zero); without it, a round orphaned by a server restart / dropped
+      // connection silently burns the player's energy — and if they return after
+      // the window with too little left, hard-blocks them with INSUFFICIENT_ENERGY.
+      //   - timed-out window -> 'expired'   (player returned after expiresAt)
+      //   - still in window   -> 'abandoned' (superseded by this new start)
+      // Re-rolling carries no economic advantage: couponMaxScore ignores `seed`,
+      // and a reward is only ever paid via finish() (which is non-refundable).
+      const expired = await tx.couponGameSession.updateMany({
         where: { userId, status: 'active', expiresAt: { lt: new Date(now) } },
-        data: { status: 'expired' },
+        data: { status: 'expired', finishedAt: new Date(now) },
       });
-
-      // A session still within its window means the previous round never
-      // finished — typically the client lost the connection (e.g. on a server
-      // restart) and will never send finish. Rather than hard-block the new
-      // round with SESSION_ACTIVE until it times out, abandon it and refund its
-      // session cost below, so the player can start a fresh round immediately.
-      // The seed never affects the score ceiling (couponMaxScore ignores it), so
-      // re-rolling the round carries no economic advantage.
       const abandoned = await tx.couponGameSession.updateMany({
         where: { userId, status: 'active' },
         data: { status: 'abandoned', finishedAt: new Date(now) },
       });
-      const refundEnergy = abandoned.count > 0 ? cfg.couponSessionCost : 0;
+      const refundEnergy =
+        expired.count + abandoned.count > 0 ? cfg.couponSessionCost : 0;
 
       // Recompute energy lazily and ensure the player can afford the round.
       const user = await tx.user.findUnique({

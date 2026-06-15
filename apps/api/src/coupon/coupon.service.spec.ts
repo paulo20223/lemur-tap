@@ -104,6 +104,35 @@ describe('CouponService.start — orphaned-round handover', () => {
     );
   });
 
+  it('refunds the session cost of a timed-out stale round (late return at zero energy)', async () => {
+    // Player came back after expiresAt with no energy left; only the refund of
+    // the round the restart orphaned lets them play instead of being stuck.
+    const { service, updateMany, userUpdateMany } = makeService({
+      expireResult: { count: 1 },
+      abandonResult: { count: 0 },
+      energy: 0,
+      maxEnergy: 5000,
+    });
+
+    await expect(service.start('u1')).resolves.toMatchObject({
+      sessionId: 'new-session',
+    });
+
+    // The timed-out round was expired (with finishedAt stamped) and refunded.
+    expect(updateMany).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        data: expect.objectContaining({ status: 'expired' }),
+      }),
+    );
+    // Net energy = refund(500) then new cost(500) debited: 0 + 500 - 500.
+    expect(userUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ energy: 0 }),
+      }),
+    );
+  });
+
   it('nets a single debit when no stale round exists', async () => {
     const { service, userUpdateMany } = makeService({
       expireResult: { count: 0 },
