@@ -1,19 +1,29 @@
 #!/usr/bin/env node
 /**
- * dev:tunnel — single public entry point for app + API over one ngrok tunnel.
+ * dev:tunnel — single public entry point for app + API over one static
+ * Cloudflare Tunnel (cloudflared).
  *
  * Flow:
- *   1. Start ngrok against the webapp port (default 5173). The Vite dev server is
- *      the only thing exposed: it serves the app and proxies `/api/*` to the API,
- *      so one tunnel covers both (see apps/webapp/vite.config.ts).
- *   2. Read the public URL from ngrok's local API (127.0.0.1:4040) — works for
- *      both a reserved static domain (NGROK_DOMAIN) and an ephemeral one.
+ *   1. Run a named cloudflared tunnel against the webapp port (default 5173).
+ *      The Vite dev server is the only thing exposed: it serves the app and
+ *      proxies `/api/*` to the API, so one tunnel covers both (see
+ *      apps/webapp/vite.config.ts). `--url http://localhost:<port>` is the
+ *      tunnel's single ingress origin.
+ *   2. The public URL is STATIC — the named tunnel's hostname (CF_TUNNEL_HOSTNAME)
+ *      is bound to a CNAME once (`cloudflared tunnel route dns <name> <host>`),
+ *      so it survives restarts. No URL discovery needed (unlike ngrok).
  *   3. Inject that URL as WEBAPP_URL (the bot opens it) + VITE_TUNNEL_HOST (HMR
  *      over wss), then start `pnpm dev` (api + webapp in parallel) as a child.
  *   4. Tear everything down together on Ctrl-C / exit.
  *
- * Config (root .env): NGROK_DOMAIN (optional reserved domain → stable URL),
- * WEBAPP_PORT (default 5173), NGROK_API (default http://127.0.0.1:4040).
+ * One-time setup (already done; here for reference):
+ *   cloudflared tunnel login
+ *   cloudflared tunnel create <CF_TUNNEL_NAME>
+ *   cloudflared tunnel route dns <CF_TUNNEL_NAME> <CF_TUNNEL_HOSTNAME>
+ *   → set https://<CF_TUNNEL_HOSTNAME> as the Mini App URL in BotFather.
+ *
+ * Config (root .env): CF_TUNNEL_NAME (named tunnel), CF_TUNNEL_HOSTNAME (the
+ * routed hostname → stable public URL), WEBAPP_PORT (default 5173).
  */
 import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
@@ -29,8 +39,17 @@ try {
 }
 
 const PORT = process.env.WEBAPP_PORT || '5173';
-const NGROK_API = process.env.NGROK_API || 'http://127.0.0.1:4040';
-const DOMAIN = process.env.NGROK_DOMAIN?.trim();
+const TUNNEL_NAME = process.env.CF_TUNNEL_NAME?.trim() || 'lemur-dev';
+const HOSTNAME = process.env.CF_TUNNEL_HOSTNAME?.trim();
+
+if (!HOSTNAME) {
+  console.error(
+    '[dev:tunnel] CF_TUNNEL_HOSTNAME is not set in .env — cannot resolve the public URL.',
+  );
+  process.exit(1);
+}
+
+const publicUrl = `https://${HOSTNAME}`;
 
 /** Children we spawn; killed together on shutdown. */
 const children = [];
@@ -49,64 +68,34 @@ function shutdown(code = 0) {
 process.on('SIGINT', () => shutdown(0));
 process.on('SIGTERM', () => shutdown(0));
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-/** Poll ngrok's local API until an https public URL appears (or time out). */
-async function waitForPublicUrl(timeoutMs = 20_000) {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    try {
-      const res = await fetch(`${NGROK_API}/api/tunnels`);
-      if (res.ok) {
-        const data = await res.json();
-        const tunnel =
-          data.tunnels?.find((t) => t.public_url?.startsWith('https://')) ??
-          data.tunnels?.[0];
-        if (tunnel?.public_url) return tunnel.public_url;
-      }
-    } catch {
-      /* ngrok not up yet */
-    }
-    await sleep(400);
-  }
-  return null;
-}
-
 async function main() {
-  // 1. Start ngrok on the webapp port.
-  const ngrokArgs = ['http', PORT, '--log', 'stdout', '--log-format', 'logfmt'];
-  if (DOMAIN) ngrokArgs.push('--url', DOMAIN);
-
+  // 1. Start the named cloudflared tunnel → webapp port.
   console.log(
-    `[dev:tunnel] starting ngrok → :${PORT}${DOMAIN ? ` (domain ${DOMAIN})` : ' (ephemeral)'}`,
+    `[dev:tunnel] starting cloudflared tunnel "${TUNNEL_NAME}" → :${PORT} (${publicUrl})`,
   );
-  const ngrok = spawn('ngrok', ngrokArgs, { stdio: 'ignore' });
-  children.push(ngrok);
-  ngrok.on('exit', (code) => {
+  const cloudflared = spawn(
+    'cloudflared',
+    ['tunnel', '--url', `http://localhost:${PORT}`, 'run', TUNNEL_NAME],
+    { stdio: 'inherit' },
+  );
+  children.push(cloudflared);
+  cloudflared.on('exit', (code) => {
     if (!shuttingDown) {
-      console.error(`[dev:tunnel] ngrok exited (code ${code}). Shutting down.`);
+      console.error(
+        `[dev:tunnel] cloudflared exited (code ${code}). Is it installed and is "${TUNNEL_NAME}" created? Shutting down.`,
+      );
       shutdown(1);
     }
   });
 
-  // 2. Resolve the public URL.
-  const publicUrl = await waitForPublicUrl();
-  if (!publicUrl) {
-    console.error(
-      `[dev:tunnel] could not read ngrok URL from ${NGROK_API}. Is ngrok authed? (ngrok config check)`,
-    );
-    shutdown(1);
-    return;
-  }
-  const host = new URL(publicUrl).host;
   console.log(`[dev:tunnel] public URL: ${publicUrl}`);
-  console.log('[dev:tunnel] → set this domain as the Mini App URL in BotFather.');
+  console.log('[dev:tunnel] → must match the Mini App URL set in BotFather.');
 
-  // 3. Start the app + API with the tunnel URL injected.
+  // 2. Start the app + API with the tunnel URL injected.
   const childEnv = {
     ...process.env,
     WEBAPP_URL: publicUrl, // bot opens this in the web_app button
-    VITE_TUNNEL_HOST: host, // HMR over wss through the tunnel
+    VITE_TUNNEL_HOST: HOSTNAME, // HMR over wss through the tunnel
   };
   const dev = spawn('pnpm', ['dev'], {
     cwd: rootDir,

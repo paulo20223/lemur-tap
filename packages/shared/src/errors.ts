@@ -18,6 +18,8 @@ export const ERROR_CODES = {
   INVALID_REQUEST: 'invalid_request',
   /** Daily already claimed for the current UTC day (409). */
   DAILY_ALREADY_CLAIMED: 'daily_already_claimed',
+  /** Coupon-boost purchases hit the per-UTC-day cap (429). */
+  COUPON_BOOST_LIMIT: 'coupon_boost_limit',
   /** Starting a coupon round while one is already active (409). */
   SESSION_ACTIVE: 'session_active',
   /** Unknown/foreign coupon session or stake (404). */

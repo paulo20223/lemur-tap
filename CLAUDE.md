@@ -25,7 +25,7 @@ pnpm install
 pnpm build:shared                      # @lemur/shared компилируется в dist — собрать ПЕРВЫМ, остальное зависит от него
 
 pnpm dev                               # api + webapp параллельно (единый origin: Vite проксирует /api → :3000)
-pnpm dev:tunnel                        # то же + ngrok: один публичный URL на app и API
+pnpm dev:tunnel                        # то же + статичный cloudflared-тунель: один публичный URL на app и API
 pnpm back                              # только NestJS API (:3000, префикс /api/v1)
 pnpm front                             # только Vite WebApp (:5173)
 
@@ -45,7 +45,7 @@ pnpm prisma:seed                       # сидит GameConfig из DEFAULT_GAME
 
 - **`packages/shared`** (`@lemur/shared`) — единственный источник правды для enum'ов (`UpgradeType`, `StakingTier`), кодов ошибок, **zod-схем DTO** (`src/dto/`, типы выводятся через `z.infer`), **oRPC-контракта** (`src/contract/` — дерево процедур на `oc` с input/output/typed errors), **схемы+типа** `GameConfig` (`GameConfigSchema` в `src/config.ts`) и **чистых функций экономики** (`src/economy.ts`). Собирается в `dist`; api и webapp выводят формы запросов/ответов из этого контракта (`class-validator` удалён — валидация zod-схемами).
 - **`apps/api`** (`@lemur/api`) — NestJS API + Telegram-бот (grammY). Postgres через Prisma, Redis через ioredis.
-- **`apps/webapp`** (`@lemur/webapp`) — React + Vite + `@telegram-apps/sdk-react`, zustand, react-router. **Единая точка входа:** Vite-сервер — единственный публичный origin; он отдаёт webapp и проксирует `/api/*` на API (`:3000`), поэтому клиент ходит по относительным путям (`VITE_API_BASE` пуст), а один ngrok-тунель (`pnpm dev:tunnel`, `scripts/dev-tunnel.mjs`) покрывает и app, и API. Тунель подставляет свой URL в `WEBAPP_URL` (его открывает бот); статический домен — через `NGROK_DOMAIN`.
+- **`apps/webapp`** (`@lemur/webapp`) — React + Vite + `@telegram-apps/sdk-react`, zustand, react-router. **Единая точка входа:** Vite-сервер — единственный публичный origin; он отдаёт webapp и проксирует `/api/*` на API (`:3000`), поэтому клиент ходит по относительным путям (`VITE_API_BASE` пуст), а один статичный cloudflared-тунель (`pnpm dev:tunnel`, `scripts/dev-tunnel.mjs`) покрывает и app, и API. Тунель подставляет свой URL в `WEBAPP_URL` (его открывает бот); именованный туннель и его хост задаются через `CF_TUNNEL_NAME`/`CF_TUNNEL_HOSTNAME`.
 
 ## Архитектурные инварианты (не нарушать)
 
@@ -60,7 +60,8 @@ pnpm prisma:seed                       # сидит GameConfig из DEFAULT_GAME
 ## Структура модулей API
 
 Один NestJS-модуль на фичу в `apps/api/src/<feature>/` (`*.module.ts` / `*.service.ts` / `*.router.ts`):
-Auth, Users, Upgrades, Coupon, Daily, Staking, Referral, Bot, плюс GameConfig и Economy.
+Auth, Users, Upgrades, Coupon, Daily, Staking, Referral, Shop, Bot, плюс GameConfig и Economy.
+(Shop — магазин корзин/скинов за монеты; каталог из live `GameConfig`, покупки атомарны через ledger + уникальные ограничения. Stars — фаза 4, пока возвращает `STARS_NOT_AVAILABLE`.)
 - **`*.router.ts`** заменил прежние `*.controller.ts`: `@Injectable`-класс с методом `build()`, возвращающим фрагмент oRPC-router. Каждая процедура — `authed.<name>.use(rateLimit(...)).handler(({ input, context }) => this.service.<m>(context.user!.userId, …))`, то есть тонкий мост в существующий сервис. Вся бизнес-логика остаётся в `*.service.ts` (их тесты переездом не затронуты).
 - **`orpc/`** — мост контракта на рантайм: `base.ts` (`implement(contract)`, `authMiddleware`/`authed`, `rateLimit`), `context.ts` (`OrpcContext`: `req` + инфра-сервисы + `user`), `orpc-handler.service.ts`, `orpc.controller.ts`.
 - Общая инфраструктура — `apps/api/src/common/`: `prisma/`, `redis/`, `throttler/` (Redis-storage), `auth/` (JwtAuthGuard, AuthUser — JWT-секрет/верификация переиспользуются middleware), `errors/` (`AppError`, `STATUS_BY_CODE`, `AllExceptionsFilter`), `decorators/` (`@Public()`, `@CurrentUser()` — на `/rpc` не используется).

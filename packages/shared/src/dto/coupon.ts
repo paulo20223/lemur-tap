@@ -6,6 +6,8 @@ export const CouponStartResponseSchema = z.object({
   sessionId: z.string(),
   /** Server seed for the deterministic client-side coupon spawn schedule. */
   seed: z.number(),
+  /** Effective round duration in ms (base + active basket bonus, spec/app/13). */
+  durationMs: z.number(),
 });
 
 export const CouponFinishRequestSchema = z.object({

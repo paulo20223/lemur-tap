@@ -96,10 +96,10 @@ body {
   padding: calc(var(--safe-top) + var(--gap)) var(--gap)
     calc(var(--nav-h) + var(--safe-bottom) + var(--gap) * 2);
   overflow-y: auto;
-  /* Always reserve the scrollbar gutter so content width stays constant
-     across pages — otherwise scrolling pages are ~15px narrower than the
-     ones that fit, and the layout visibly shifts on every navigation. */
-  scrollbar-gutter: stable;
+  /* No scrollbar-gutter reservation: in the actual runtime (Telegram Mini App
+     on mobile, plus macOS) scrollbars are OVERLAY and take no layout space, so
+     there's no width jump to guard against. Reserving a stable gutter only
+     leaves a dead empty strip on the right of pages that don't scroll. */
 }
 
 /* ── Bottom nav ────────────────────────────────────────────────────────── */

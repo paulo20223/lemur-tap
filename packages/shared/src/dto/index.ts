@@ -7,3 +7,4 @@ export * from './upgrades.js';
 export * from './staking.js';
 export * from './referral.js';
 export * from './leaderboard.js';
+export * from './shop.js';

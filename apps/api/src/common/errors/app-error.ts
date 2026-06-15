@@ -35,6 +35,9 @@ export class AppError extends Error {
   static dailyAlreadyClaimed(msg = 'Daily bonus already claimed today'): AppError {
     return new AppError(ERROR_CODES.DAILY_ALREADY_CLAIMED, msg);
   }
+  static couponBoostLimit(msg = 'Daily coupon-boost limit reached'): AppError {
+    return new AppError(ERROR_CODES.COUPON_BOOST_LIMIT, msg);
+  }
   static sessionActive(msg = 'A coupon session is already active'): AppError {
     return new AppError(ERROR_CODES.SESSION_ACTIVE, msg);
   }

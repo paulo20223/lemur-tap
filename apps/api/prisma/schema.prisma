@@ -33,6 +33,12 @@ model User {
   // Denormalized copy of Referral.referrerId; set once on first /auth.
   referrerId   String?
 
+  // Shop (spec/app/13). Active basket tier (0 = default; raises coupon round
+  // duration via effectiveCouponDurationMs). equippedSkinId = the cosmetic skin
+  // currently worn (null until one is equipped); ownership lives in UserCosmetic.
+  basketTier     Int     @default(0)
+  equippedSkinId String?
+
   // Optimistic-locking counter for balance mutations.
   version Int @default(0)
 
@@ -44,6 +50,8 @@ model User {
   dailyClaims  DailyBonusClaim[]
   couponSessions CouponGameSession[]
   stakes       Stake[]
+  cosmetics    UserCosmetic[]
+  starsInvoices StarsInvoice[]
 
   // Referral relations (a user is referrer of many, referee of at most one).
   referralsMade Referral[] @relation("Referrer")
@@ -67,6 +75,45 @@ model UserUpgrade {
   @@map("user_upgrades")
 }
 
+// ── UserCosmetic ──────────────────────────────────────────────────────────
+// Skin ownership (spec/app/13). One row per owned skin per user; the equipped
+// one is User.equippedSkinId. @@unique enforces idempotent ownership (a skin
+// can be acquired only once).
+model UserCosmetic {
+  id         String   @id @default(cuid())
+  userId     String
+  skinId     String
+  acquiredAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skinId])
+  @@map("user_cosmetics")
+}
+
+// ── StarsInvoice ──────────────────────────────────────────────────────────
+// Telegram Stars purchase audit (spec/app/13, phase 4). One row per invoice the
+// webapp requests; the bot fulfils it on successful_payment. This IS the Stars
+// audit trail (no LedgerEntry is written — the ledger is the COIN audit only,
+// and Stars purchases move no coins). telegramChargeId is unique → idempotent
+// fulfilment. `ref` is the basket tier (as a string) or the skinId by `kind`.
+model StarsInvoice {
+  id               String    @id @default(cuid())
+  userId           String
+  kind             String    // 'basket' | 'skin'
+  ref              String    // basket tier (as string) or skinId
+  priceStars       Int
+  status           String    @default("pending") // 'pending' | 'paid' | 'failed'
+  telegramChargeId String?   @unique
+  createdAt        DateTime  @default(now())
+  paidAt           DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("stars_invoices")
+}
+
 // ── LedgerEntry ───────────────────────────────────────────────────────────
 // Full audit of coin movements. One game action ⇒ 0..1 entries.
 model LedgerEntry {
@@ -74,7 +121,8 @@ model LedgerEntry {
   userId String
   // Signed whole coins.
   amount BigInt
-  // 'coupon' | 'daily' | 'stake' | 'unstake' | 'stake_yield' | 'referral' | 'upgrade'
+  // 'coupon' | 'coupon_boost' | 'daily' | 'stake' | 'unstake' | 'stake_yield' |
+  // 'stake_boost' | 'referral' | 'upgrade' | 'basket_purchase' | 'skin_purchase'
   // (legacy 'tap'/'fruit' rows may still exist in historical data; readers tolerate them)
   type   String
   // For type='referral': 'join' | 'premium' | 'passive'; otherwise null.
@@ -120,7 +168,7 @@ model CouponGameSession {
   finishedAt DateTime?
   score      Int       @default(0)
   rewardCoins BigInt   @default(0)
-  // 'active' | 'finished' | 'rejected' | 'expired'
+  // 'active' | 'finished' | 'rejected' | 'expired' | 'abandoned'
   status     String    @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

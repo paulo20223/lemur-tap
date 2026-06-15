@@ -13,12 +13,13 @@ import { UpgradesRouter } from '../upgrades/upgrades.router';
 import { CouponRouter } from '../coupon/coupon.router';
 import { DailyRouter } from '../daily/daily.router';
 import { StakingRouter } from '../staking/staking.router';
+import { ShopRouter } from '../shop/shop.router';
 import { ReferralRouter } from '../referral/referral.router';
 import { LeaderboardRouter } from '../leaderboard/leaderboard.router';
 import type { OrpcContext } from './context';
 
 /**
- * Merges the 8 feature-router fragments into one oRPC router, wraps it in a
+ * Merges the 9 feature-router fragments into one oRPC router, wraps it in a
  * Node RPCHandler, and exposes a single `handle(req, res)` entry point for the
  * Nest catch-all controller. A root interceptor maps thrown {@link AppError}s
  * to {@link ORPCError}s so the canonical `{ code, message }` + HTTP status
@@ -38,6 +39,7 @@ export class OrpcHandlerService {
     private readonly couponRouter: CouponRouter,
     private readonly dailyRouter: DailyRouter,
     private readonly stakingRouter: StakingRouter,
+    private readonly shopRouter: ShopRouter,
     private readonly referralRouter: ReferralRouter,
     private readonly leaderboardRouter: LeaderboardRouter,
   ) {
@@ -48,6 +50,7 @@ export class OrpcHandlerService {
       ...this.couponRouter.build(),
       ...this.dailyRouter.build(),
       ...this.stakingRouter.build(),
+      ...this.shopRouter.build(),
       ...this.referralRouter.build(),
       ...this.leaderboardRouter.build(),
     };

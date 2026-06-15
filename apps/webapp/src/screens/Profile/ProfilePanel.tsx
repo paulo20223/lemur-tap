@@ -11,12 +11,13 @@
  * and the .ref-sheet primitive): a centred identity credential, then a single
  * balance statement (coins lead total + a hairline-divided energy meter).
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useGameStore } from '../../store';
 import { getTelegramContext } from '../../telegram';
 import { CoinIcon, EnergyIcon, TrophyIcon } from '../../components/icons';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import { useI18n } from '../../i18n';
+import { skinVariant, resolveSkinId, DEFAULT_SKIN_ID } from '../Shop/skins';
 
 /** Compact whole-coin formatter (1 234 567). */
 function formatCoins(n: number): string {
@@ -39,8 +40,17 @@ export default function ProfilePanel() {
   const { t, locale } = useI18n();
   const profile = useGameStore((s) => s.profile);
   const energy = useGameStore((s) => s.energy);
+  const equippedSkinId = useGameStore((s) => s.shopCatalog?.equippedSkinId ?? null);
+  const loadShopCatalog = useGameStore((s) => s.loadShopCatalog);
   // Fall back to the monogram if the Telegram photo URL is absent or fails.
   const [photoFailed, setPhotoFailed] = useState(false);
+
+  // Load the catalog (which carries equippedSkinId) so the avatar can show the
+  // equipped skin. Best-effort, runs once if not already loaded.
+  useEffect(() => {
+    if (equippedSkinId === null) void loadShopCatalog().catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!profile) return null;
 
@@ -62,6 +72,12 @@ export default function ProfilePanel() {
     'L'
   ).toUpperCase();
   const photoUrl = !photoFailed ? tg?.photoUrl : undefined;
+
+  // Equipped cosmetic skin — shown as a small glyph badge on the avatar (the
+  // default 'classic' skin adds nothing). Graceful fallback for unknown ids.
+  const skinId = resolveSkinId(equippedSkinId);
+  const showSkin = skinId !== DEFAULT_SKIN_ID;
+  const skin = skinVariant(skinId);
 
   const maxEnergy = profile.maxEnergy;
   const shown = Math.floor(energy);
@@ -87,6 +103,14 @@ export default function ProfilePanel() {
             />
           ) : (
             monogram
+          )}
+          {showSkin && (
+            <span
+              className="prof-avatar__skin"
+              style={{ '--skin-accent': skin.accent } as React.CSSProperties}
+            >
+              {skin.glyph}
+            </span>
           )}
         </div>
 

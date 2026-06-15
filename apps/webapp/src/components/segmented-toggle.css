@@ -1,12 +1,13 @@
 /* SegmentedToggle — carved sunken track + one raised clay thumb that glides
-   between two segments. Shares the claymorphic recipe (orange clay, gold rim,
+   between N segments. Shares the claymorphic recipe (orange clay, gold rim,
    top gloss) with the bottom-nav indicator so the app's switchers read as one
-   family. Used by the Rewards and Profile pages. */
+   family. Used by the Shop (3-up) and Profile (2-up) pages. Geometry is driven
+   by --seg-count so any segment count works. */
 
 .segtab {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(var(--seg-count, 2), 1fr);
   padding: 4px;
   border-radius: var(--radius-pill);
   background: linear-gradient(180deg, var(--card-sunken) 0%, #ffe9d6 100%);
@@ -21,7 +22,7 @@
   top: 4px;
   bottom: 4px;
   left: 4px;
-  width: calc((100% - 8px) / 2);
+  width: calc((100% - 8px) / var(--seg-count, 2));
   transform: translateX(calc(var(--active-index, 0) * 100%));
   /* ease-out-quint: fast departure, soft weighty settle — reads as liquid. */
   transition: transform 0.44s cubic-bezier(0.22, 1, 0.36, 1);

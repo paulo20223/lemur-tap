@@ -20,9 +20,9 @@ export const en: Translations<typeof ru> = {
 
   nav: {
     play: 'Play',
-    rewards: 'Rewards',
+    shop: 'Shop',
     ranks: 'Ranks',
-    stake: 'Stake',
+    stake: 'Bank',
     profile: 'Profile',
   },
 
@@ -66,11 +66,46 @@ export const en: Translations<typeof ru> = {
     },
   },
 
-  rewards: {
-    daily: 'Daily',
-    boosts: 'Boosts',
-    sectionLabel: 'Rewards section',
+  shop: {
+    tabDaily: 'Bonus',
+    tabBoosts: 'Boosts',
+    tabProducts: 'Goods',
+    sectionLabel: 'Shop section',
+    productsLabel: 'Goods section',
     yourCoins: 'Your coins',
+    skinsTitle: 'Lemusters',
+    basketsTitle: 'Baskets',
+    basketName: 'Basket · tier {tier}',
+    basketKraft: 'Cardboard',
+    basketCanvas: 'Canvas',
+    basketLeather: 'Leather',
+    basketBronze: 'Bronze',
+    basketSilver: 'Silver',
+    basketGold: 'Gold',
+    basketBase: 'Default',
+    roundBonus: '+{n}s to the round',
+    buy: 'Buy',
+    buying: 'Buying…',
+    equip: 'Equip',
+    equipping: 'Equipping…',
+    equipped: 'Equipped',
+    active: 'Active',
+    owned: 'Owned',
+    soon: 'Soon',
+    starsSoon: 'Stars payment is coming soon',
+    buyStars: 'Pay with Stars',
+    starsPending: 'Confirming payment…',
+    notEnoughCoins: 'Not enough coins',
+    failedLoad: 'Failed to load the shop. Please try again.',
+    errors: {
+      insufficientCoins: 'Not enough coins.',
+      alreadyOwned: 'You already own this item.',
+      notOwned: 'Buy this skin first.',
+      unknownItem: 'Unknown item.',
+      starsNotAvailable: 'Stars payment is not available yet.',
+      starsFailed: 'Stars payment failed. Please try again.',
+      generic: 'Something went wrong. Please try again.',
+    },
   },
 
   daily: {
@@ -128,11 +163,12 @@ export const en: Translations<typeof ru> = {
       effect: '+{energy} energy',
       buy: 'Buy boost',
       buying: 'Buying…',
+      dailyLimit: 'Daily boost limit reached. Come back tomorrow.',
     },
   },
 
   staking: {
-    title: 'Staking',
+    title: 'Bank',
     tiers: {
       flex: 'Flex',
       lock: 'Lock',

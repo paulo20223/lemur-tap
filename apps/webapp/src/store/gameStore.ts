@@ -12,7 +12,15 @@
  * fetched directly via apiClient inside each screen.
  */
 import { create } from 'zustand';
-import { regenEnergy, type GameConfig, type UserProfileDto } from '@lemur/shared';
+import {
+  regenEnergy,
+  type GameConfig,
+  type ShopBasketItem,
+  type ShopCatalogResponse,
+  type ShopPurchaseResponse,
+  type ShopSkinItem,
+  type UserProfileDto,
+} from '@lemur/shared';
 import { apiClient } from '../api/client';
 import { getTelegramContext } from '../telegram';
 
@@ -42,10 +50,19 @@ export interface GameState {
   /** Internal snapshot driving the ticker. */
   energySnapshot: EnergySnapshot | null;
 
+  /** Shop catalog (baskets + skins + ownership), lazily loaded. */
+  shopCatalog: ShopCatalogResponse | null;
+
   // ── actions ──
   bootstrap: () => Promise<void>;
   applyProfile: (profile: UserProfileDto) => void;
   setConfig: (config: GameConfig) => void;
+  /** Load (or reload) the shop catalog. */
+  loadShopCatalog: () => Promise<void>;
+  /** Reconcile the coins balance + a touched item from a purchase response. */
+  applyShopPurchase: (res: ShopPurchaseResponse) => void;
+  /** Equip a skin locally (optimistic), keeping catalog state coherent. */
+  applyEquippedSkin: (skinId: string) => void;
   /** Reconcile energy from a server response (coupon/etc.). */
   setEnergyFromServer: (energy: number, energyUpdatedAt?: number) => void;
   /** Optimistically subtract energy locally (e.g. before a coupon start). */
@@ -70,6 +87,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   config: null,
   energy: 0,
   energySnapshot: null,
+  shopCatalog: null,
 
   bootstrap: async () => {
     if (get().boot === 'loading' || get().boot === 'ready') return;
@@ -107,6 +125,70 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   setConfig: (config) => set({ config }),
+
+  loadShopCatalog: async () => {
+    const catalog = await apiClient.shopCatalog();
+    set({ shopCatalog: catalog });
+  },
+
+  applyShopPurchase: (res) => {
+    // Keep the shared coin balance authoritative for every screen + nav.
+    const profile = get().profile;
+    if (profile) set({ profile: { ...profile, coins: res.coins } });
+
+    const cat = get().shopCatalog;
+    if (!cat) return;
+
+    if (res.basket) {
+      const bought = res.basket;
+      // The active tier is the best owned one; re-derive `active` across all
+      // baskets so exactly the top owned tier stays highlighted.
+      const baskets: ShopBasketItem[] = cat.baskets.map((b) =>
+        b.tier === bought.tier ? bought : b,
+      );
+      const activeTier = baskets.reduce(
+        (best, b) => (b.owned && b.tier > best ? b.tier : best),
+        0,
+      );
+      set({
+        shopCatalog: {
+          ...cat,
+          baskets: baskets.map((b) => ({ ...b, active: b.tier === activeTier })),
+          basketTier: activeTier,
+        },
+      });
+    }
+
+    if (res.skin) {
+      const bought = res.skin;
+      const skins: ShopSkinItem[] = cat.skins.map((s) =>
+        s.id === bought.id ? bought : s,
+      );
+      // A buy doesn't auto-equip; only mirror an explicit `equipped` flag.
+      const equippedSkinId = bought.equipped ? bought.id : cat.equippedSkinId;
+      set({
+        shopCatalog: {
+          ...cat,
+          skins: equippedSkinId
+            ? skins.map((s) => ({ ...s, equipped: s.id === equippedSkinId }))
+            : skins,
+          equippedSkinId,
+        },
+      });
+    }
+  },
+
+  applyEquippedSkin: (skinId) => {
+    const cat = get().shopCatalog;
+    if (!cat) return;
+    set({
+      shopCatalog: {
+        ...cat,
+        equippedSkinId: skinId,
+        skins: cat.skins.map((s) => ({ ...s, equipped: s.id === skinId })),
+      },
+    });
+  },
 
   setEnergyFromServer: (energy, energyUpdatedAt) => {
     const prev = get().energySnapshot;

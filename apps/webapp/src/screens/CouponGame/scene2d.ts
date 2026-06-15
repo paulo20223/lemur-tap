@@ -17,9 +17,10 @@
  * or score popups). Caller pauses the RAF when hidden/off-screen.
  */
 import { type Brand, logoSvg } from './coupons';
+import { LEMUR_SVG, lemurSkinVars, basketTierVars } from './lemur';
 
 /** Normalized fall tuning: SpawnSpec.vy is field-heights/sec after this scale. */
-const FALL_SCALE = 4.0;
+const FALL_SCALE = 5.0;
 /** Spawn just above the top edge (normalized y). */
 const SPAWN_Y = -0.12;
 /** Basket catch line (normalized y) — where coupons are caught. */
@@ -46,6 +47,7 @@ export interface SceneClasses {
   couponBadge: string;
   catcher: string;
   pop: string;
+  burst: string;
 }
 
 export interface SceneOptions {
@@ -58,6 +60,18 @@ export interface SceneOptions {
 export interface SceneHandle {
   /** Move the basket; n is normalized 0..1 across the field. */
   setBasketX: (n01: number) => void;
+  /**
+   * Apply the equipped cosmetic skin to the lemur catcher (spec/app/13). Sets a
+   * `data-skin` attribute (for variant styling) and a `--skin-accent` tint var.
+   * Purely cosmetic; unknown ids fall back to the default look.
+   */
+  setSkin: (skinId: string, accent: string) => void;
+  /**
+   * Apply the active basket tier (spec/app/13) — recolours the woven basket to
+   * its metal (wicker → silver → gold). Purely cosmetic; the round-length bonus
+   * is server-authoritative. tier 0 = the default starter basket.
+   */
+  setBasket: (tier: number) => void;
   /** Spawn a coupon at normalized x (0..1) with vy in field-heights/sec. */
   spawnCoupon: (brand: Brand, x01: number, vy: number) => void;
   /** Advance physics by dt seconds (also tests catches). */
@@ -82,59 +96,12 @@ interface PooledCoupon {
   spin: number;
   rot: number;
   caught: boolean;
-  /** Pop-out progress 0..1 once caught. */
+  /** Catch-animation progress 0..1 once caught (scoop into the basket). */
   pop: number;
+  /** Normalized position at the moment of the catch (scoop origin). */
+  catchX: number;
+  catchY: number;
 }
-
-/** Ring-tailed lemur cradling a woven shopping basket (original cartoon SVG). */
-const LEMUR_SVG = `
-<svg viewBox="0 0 160 150" width="100%" height="100%" aria-hidden="true">
-  <!-- ringed tail, curling up the right side -->
-  <path d="M120 120 C155 110 156 60 138 40 C128 28 110 26 104 36"
-        fill="none" stroke="#f4f1ee" stroke-width="13" stroke-linecap="round"/>
-  <path d="M120 120 C155 110 156 60 138 40 C128 28 110 26 104 36"
-        fill="none" stroke="#2b2b2b" stroke-width="13" stroke-linecap="round"
-        stroke-dasharray="9 11"/>
-  <!-- body -->
-  <ellipse cx="80" cy="104" rx="34" ry="30" fill="#9aa0a6"/>
-  <ellipse cx="80" cy="108" rx="22" ry="22" fill="#e9e6e2"/>
-  <!-- arms hugging the basket -->
-  <path d="M52 100 q-12 14 4 26" fill="none" stroke="#9aa0a6" stroke-width="13" stroke-linecap="round"/>
-  <path d="M108 100 q12 14 -4 26" fill="none" stroke="#9aa0a6" stroke-width="13" stroke-linecap="round"/>
-  <!-- head -->
-  <circle cx="80" cy="58" r="30" fill="#9aa0a6"/>
-  <!-- ears -->
-  <circle cx="54" cy="34" r="11" fill="#9aa0a6"/>
-  <circle cx="106" cy="34" r="11" fill="#9aa0a6"/>
-  <circle cx="54" cy="34" r="5" fill="#d98c98"/>
-  <circle cx="106" cy="34" r="5" fill="#d98c98"/>
-  <!-- white face -->
-  <path d="M80 30 C100 30 102 54 96 66 C92 76 86 82 80 82 C74 82 68 76 64 66 C58 54 60 30 80 30 Z" fill="#f4f1ee"/>
-  <!-- dark eye patches -->
-  <ellipse cx="69" cy="56" rx="10" ry="12" fill="#3a3633"/>
-  <ellipse cx="91" cy="56" rx="10" ry="12" fill="#3a3633"/>
-  <!-- amber eyes -->
-  <circle cx="69" cy="57" r="6.5" fill="#e8a33d"/>
-  <circle cx="91" cy="57" r="6.5" fill="#e8a33d"/>
-  <circle cx="69" cy="57" r="3" fill="#1a1a1a"/>
-  <circle cx="91" cy="57" r="3" fill="#1a1a1a"/>
-  <circle cx="71" cy="55" r="1.2" fill="#fff"/>
-  <circle cx="93" cy="55" r="1.2" fill="#fff"/>
-  <!-- muzzle + nose -->
-  <ellipse cx="80" cy="72" rx="8" ry="6" fill="#fbf9f7"/>
-  <path d="M76 70 h8 l-4 5 Z" fill="#2b2b2b"/>
-  <!-- woven shopping basket (the catch zone), drawn in front -->
-  <path d="M46 110 H114 L106 142 H54 Z" fill="#c07b34"/>
-  <path d="M46 110 H114 L112 118 H48 Z" fill="#9a5f24"/>
-  <g stroke="#9a5f24" stroke-width="2" opacity="0.7">
-    <line x1="62" y1="118" x2="60" y2="140"/>
-    <line x1="80" y1="118" x2="80" y2="140"/>
-    <line x1="98" y1="118" x2="100" y2="140"/>
-    <line x1="50" y1="126" x2="110" y2="126"/>
-    <line x1="52" y1="134" x2="108" y2="134"/>
-  </g>
-  <path d="M44 110 q36 -22 72 0" fill="none" stroke="#9a5f24" stroke-width="5" stroke-linecap="round"/>
-</svg>`;
 
 export function createScene(root: HTMLElement, opts: SceneOptions): SceneHandle {
   const { reducedMotion, classes, onScore } = opts;
@@ -142,6 +109,9 @@ export function createScene(root: HTMLElement, opts: SceneOptions): SceneHandle 
   let W = root.clientWidth || 1;
   let H = root.clientHeight || 1;
   let basketX01 = 0.5;
+  // Catch-impact squash on the basket: decays 1→0 over the bounce, drives a
+  // brief squash-and-stretch on the catcher (placeCatcher reads it each frame).
+  let bounce = 0;
 
   // Field layer that holds coupons + lemur (positioned over the themed stage).
   const field = document.createElement('div');
@@ -155,7 +125,31 @@ export function createScene(root: HTMLElement, opts: SceneOptions): SceneHandle 
   field.appendChild(catcher);
 
   function placeCatcher(): void {
-    catcher.style.transform = `translateX(${(basketX01 - 0.5) * W}px)`;
+    const tx = (basketX01 - 0.5) * W;
+    let squash = '';
+    if (!reducedMotion && bounce > 0) {
+      // Envelope 0→1→0 across the bounce: the basket dips and springs back.
+      const e = Math.sin((1 - bounce) * Math.PI);
+      squash = ` scaleX(${(1 + 0.1 * e).toFixed(3)}) scaleY(${(1 - 0.13 * e).toFixed(3)})`;
+    }
+    catcher.style.transform = `translateX(${tx}px)${squash}`;
+  }
+
+  function setSkin(skinId: string, accent: string): void {
+    catcher.dataset.skin = skinId;
+    catcher.style.setProperty('--skin-accent', accent);
+    // Recolour the lemur's fur/ears/eyes to the equipped skin.
+    for (const [k, v] of Object.entries(lemurSkinVars(skinId))) {
+      catcher.style.setProperty(k, v);
+    }
+  }
+
+  function setBasket(tier: number): void {
+    catcher.dataset.basket = String(tier);
+    // Recolour the woven basket to the active tier's metal.
+    for (const [k, v] of Object.entries(basketTierVars(tier))) {
+      catcher.style.setProperty(k, v);
+    }
   }
 
   // ── Coupon pool ───────────────────────────────────────────────────────────
@@ -178,6 +172,8 @@ export function createScene(root: HTMLElement, opts: SceneOptions): SceneHandle 
       rot: 0,
       caught: false,
       pop: 0,
+      catchX: 0,
+      catchY: 0,
     });
   }
 
@@ -198,7 +194,15 @@ export function createScene(root: HTMLElement, opts: SceneOptions): SceneHandle 
   function place(slot: PooledCoupon): void {
     const px = slot.x01 * W - CARD_W / 2;
     const py = slot.y01 * H - CARD_H / 2;
-    const scale = slot.caught ? 1 + slot.pop * 0.6 : 1;
+    let scale = 1;
+    if (slot.caught) {
+      const p = Math.min(1, slot.pop);
+      scale = reducedMotion
+        ? 1 + p * 0.4
+        : p < 0.2
+          ? 1 + p * 1.1 // brief acknowledging pop (→ ~1.22)
+          : 1.22 - ((p - 0.2) / 0.8) * 1.04; // then shrink down into the basket
+    }
     slot.el.style.transform = `translate(${px}px, ${py}px) rotate(${slot.rot}deg) scale(${scale})`;
   }
 
@@ -242,15 +246,45 @@ export function createScene(root: HTMLElement, opts: SceneOptions): SceneHandle 
     el.addEventListener('animationend', () => el.remove(), { once: true });
   }
 
+  /** A short brand-tinted ring that flashes at the catch point. */
+  function popBurst(x01: number, y01: number, color: string, legendary: boolean): void {
+    if (reducedMotion) return;
+    const el = document.createElement('div');
+    el.className = classes.burst;
+    el.style.left = `${x01 * W}px`;
+    el.style.top = `${y01 * H}px`;
+    el.style.setProperty('--burst', color);
+    if (legendary) el.dataset.rarity = 'legendary';
+    field.appendChild(el);
+    el.addEventListener('animationend', () => el.remove(), { once: true });
+  }
+
   function update(dt: number): void {
+    // Decay the catch-impact squash, re-placing the basket while it springs.
+    if (bounce > 0) {
+      bounce = Math.max(0, bounce - dt * 3.5);
+      placeCatcher();
+    }
+
     for (const slot of pool) {
       if (!slot.active) continue;
 
       if (slot.caught) {
-        slot.pop += dt * 4;
-        slot.el.style.opacity = String(Math.max(0, 1 - slot.pop));
+        slot.pop += dt * (reducedMotion ? 4 : 4.5);
+        const p = Math.min(1, slot.pop);
+        if (reducedMotion) {
+          slot.el.style.opacity = String(Math.max(0, 1 - p));
+        } else {
+          // Scoop along an eased arc toward the basket mouth, which tracks the
+          // live basket position; tumble a touch and fade out as it drops in.
+          const ease = 1 - Math.pow(1 - p, 3);
+          slot.x01 = slot.catchX + (basketX01 - slot.catchX) * ease;
+          slot.y01 = slot.catchY + (CATCH_Y + 0.07 - slot.catchY) * ease;
+          slot.rot += slot.spin * 1.6 * dt;
+          slot.el.style.opacity = String(p < 0.6 ? 1 : Math.max(0, 1 - (p - 0.6) / 0.4));
+        }
         place(slot);
-        if (slot.pop >= 1) recycle(slot);
+        if (p >= 1) recycle(slot);
         continue;
       }
 
@@ -264,9 +298,17 @@ export function createScene(root: HTMLElement, opts: SceneOptions): SceneHandle 
         Math.abs(slot.x01 - basketX01) <= CATCH_HALF_N
       ) {
         slot.caught = true;
+        slot.pop = 0;
+        slot.catchX = slot.x01;
+        slot.catchY = slot.y01;
         if (slot.brand) {
           onScore(slot.brand.points);
           popScore(slot.brand.points, slot.x01);
+          popBurst(slot.x01, slot.y01, slot.brand.color, slot.brand.rarity === 'legendary');
+        }
+        if (!reducedMotion) {
+          bounce = 1;
+          placeCatcher();
         }
         place(slot);
         continue;
@@ -296,5 +338,5 @@ export function createScene(root: HTMLElement, opts: SceneOptions): SceneHandle 
 
   placeCatcher();
 
-  return { setBasketX, spawnCoupon, update, resize, render, dispose };
+  return { setBasketX, setSkin, setBasket, spawnCoupon, update, resize, render, dispose };
 }

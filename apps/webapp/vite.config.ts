@@ -34,8 +34,10 @@ export default defineConfig(({ mode }) => {
       host: true,
       port: 5173,
       // Hosts allowed to reach the dev server through a tunnel.
-      // Cloudflare quick tunnels + ngrok (free, paid, and legacy domains).
+      // Static cloudflared tunnel (dev-tap.connect24.life) + Cloudflare quick
+      // tunnels + ngrok (free, paid, and legacy domains).
       allowedHosts: [
+        '.connect24.life',
         '.trycloudflare.com',
         '.ngrok-free.app',
         '.ngrok-free.dev',

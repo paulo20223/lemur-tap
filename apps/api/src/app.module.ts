@@ -20,6 +20,7 @@ import { UpgradesModule } from './upgrades/upgrades.module';
 import { CouponModule } from './coupon/coupon.module';
 import { DailyModule } from './daily/daily.module';
 import { StakingModule } from './staking/staking.module';
+import { ShopModule } from './shop/shop.module';
 import { ReferralModule } from './referral/referral.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
 import { BotModule } from './bot/bot.module';
@@ -56,6 +57,7 @@ import { OrpcModule } from './orpc/orpc.module';
     CouponModule,
     DailyModule,
     StakingModule,
+    ShopModule,
     ReferralModule,
     LeaderboardModule,
     BotModule,

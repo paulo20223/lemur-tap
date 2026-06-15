@@ -45,6 +45,8 @@
   max-width: 168px;
   aspect-ratio: 160 / 150;
   margin-left: calc(-19%);
+  /* Squash-and-stretch on a catch springs from the planted base of the basket. */
+  transform-origin: bottom center;
   will-change: transform;
   filter: drop-shadow(0 6px 10px rgba(120, 70, 20, 0.25));
 }
@@ -53,6 +55,40 @@
   display: block;
   width: 100%;
   height: 100%;
+}
+
+/* ── Equipped-skin variants (spec/app/13) ─────────────────────────────────
+   Cosmetic-only: the lemur SVG is unchanged; the skin tints the contact glow
+   with the skin accent (set as --skin-accent in scene2d.setSkin) and adds a
+   subtle treatment per variant. Graceful fallback: no data-skin = default. */
+.catcher[data-skin] {
+  filter: drop-shadow(0 6px 10px rgba(120, 70, 20, 0.25))
+    drop-shadow(0 0 7px var(--skin-accent, transparent));
+}
+
+/* Делец — warm, energetic amber. */
+.catcher[data-skin='dealer'] svg {
+  filter: saturate(1.1) brightness(1.02);
+}
+
+/* Воротила — calm, composed steel tone. */
+.catcher[data-skin='broker'] svg {
+  filter: saturate(1.04);
+}
+
+/* Магнат — solid money-green clarity. */
+.catcher[data-skin='magnate'] svg {
+  filter: saturate(1.08) brightness(1.01);
+}
+
+/* Олигарх — warm, confident burgundy depth. */
+.catcher[data-skin='oligarch'] svg {
+  filter: saturate(1.08) brightness(1.0);
+}
+
+/* Меценат — refined gilded sheen. */
+.catcher[data-skin='patron'] svg {
+  filter: saturate(1.1) brightness(1.03) contrast(1.02);
 }
 
 /* ── Falling coupon: a brand "ticket stub" ───────────────────────────────
@@ -236,6 +272,40 @@
   100% {
     opacity: 0;
     transform: translate(-50%, -42px) scale(1);
+  }
+}
+
+/* Brand-tinted ring that flashes at the catch point as a coupon is scooped in. */
+.burst {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 2.5px solid color-mix(in srgb, var(--burst, #ff7a1a) 65%, #ffffff);
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--burst, #ff7a1a) 45%, transparent),
+    inset 0 0 8px color-mix(in srgb, var(--burst, #ff7a1a) 30%, transparent);
+  animation: catchBurst 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Legendary catches flash a richer gold ring. */
+.burst[data-rarity='legendary'] {
+  border-color: var(--gold);
+  box-shadow:
+    0 0 14px rgba(232, 134, 10, 0.5),
+    inset 0 0 10px rgba(232, 134, 10, 0.3);
+}
+
+@keyframes catchBurst {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.35);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.45);
   }
 }
 

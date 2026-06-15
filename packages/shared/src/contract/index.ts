@@ -13,6 +13,8 @@ import {
   AuthTelegramResponseSchema,
   BoostRequestSchema,
   BoostResponseSchema,
+  BuyBasketRequestSchema,
+  BuySkinRequestSchema,
   ClaimRequestSchema,
   ClaimResponseSchema,
   CouponBoostResponseSchema,
@@ -21,10 +23,15 @@ import {
   CouponStartResponseSchema,
   DailyClaimResponseSchema,
   DailyStatusResponseSchema,
+  EquipSkinRequestSchema,
   LeaderboardQuerySchema,
   LeaderboardResponseSchema,
   ReferralQuerySchema,
   ReferralResponseSchema,
+  ShopCatalogResponseSchema,
+  ShopPurchaseResponseSchema,
+  StarsInvoiceRequestSchema,
+  StarsInvoiceResponseSchema,
   StakePositionSchema,
   StakeRequestSchema,
   StakeResponseSchema,
@@ -63,7 +70,7 @@ export const contract = {
       .errors({ SESSION_NOT_FOUND: {}, SESSION_REJECTED: {}, SESSION_EXPIRED: {} }),
     boost: oc
       .output(CouponBoostResponseSchema)
-      .errors({ INSUFFICIENT_COINS: {} }),
+      .errors({ INSUFFICIENT_COINS: {}, COUPON_BOOST_LIMIT: {} }),
   },
   daily: {
     status: oc.output(DailyStatusResponseSchema),
@@ -94,6 +101,35 @@ export const contract = {
         INSUFFICIENT_COINS: {},
         MAX_LEVEL: {},
       }),
+  },
+  shop: {
+    catalog: oc.output(ShopCatalogResponseSchema),
+    buyBasket: oc
+      .input(BuyBasketRequestSchema)
+      .output(ShopPurchaseResponseSchema)
+      .errors({
+        INSUFFICIENT_COINS: {},
+        ALREADY_OWNED: {},
+        UNKNOWN_ITEM: {},
+        STARS_NOT_AVAILABLE: {},
+      }),
+    buySkin: oc
+      .input(BuySkinRequestSchema)
+      .output(ShopPurchaseResponseSchema)
+      .errors({
+        INSUFFICIENT_COINS: {},
+        ALREADY_OWNED: {},
+        UNKNOWN_ITEM: {},
+        STARS_NOT_AVAILABLE: {},
+      }),
+    equipSkin: oc
+      .input(EquipSkinRequestSchema)
+      .output(ShopPurchaseResponseSchema)
+      .errors({ NOT_OWNED: {}, UNKNOWN_ITEM: {} }),
+    createStarsInvoice: oc
+      .input(StarsInvoiceRequestSchema)
+      .output(StarsInvoiceResponseSchema)
+      .errors({ UNKNOWN_ITEM: {}, ALREADY_OWNED: {}, STARS_NOT_AVAILABLE: {} }),
   },
   referral: {
     list: oc.input(ReferralQuerySchema).output(ReferralResponseSchema),

@@ -19,7 +19,7 @@ import { useT } from './i18n';
 // Screen imports (default exports). These resolve once each screen agent adds
 // its folder; the contract is documented in the orchestrator return.
 import CouponGame from './screens/CouponGame/CouponGame';
-import Rewards from './screens/Rewards/Rewards';
+import Shop from './screens/Shop/Shop';
 import Staking from './screens/Staking/Staking';
 import Leaderboard from './screens/Leaderboard/Leaderboard';
 import Profile from './screens/Profile/Profile';
@@ -76,14 +76,18 @@ export default function App() {
             <ErrorBoundary>
               <Routes>
                 <Route path="/" element={<CouponGame />} />
-                <Route path="/rewards" element={<Rewards />} />
+                <Route path="/shop" element={<Shop />} />
                 {/* Back-compat: the old split routes now redirect into the
-                    merged screen, preselecting the matching segment. */}
-                <Route path="/daily" element={<Navigate to="/rewards" replace />} />
+                    merged Shop screen, preselecting the matching segment. */}
+                <Route
+                  path="/rewards"
+                  element={<Navigate to="/shop" replace />}
+                />
+                <Route path="/daily" element={<Navigate to="/shop" replace />} />
                 <Route
                   path="/upgrades"
                   element={
-                    <Navigate to="/rewards" replace state={{ view: 'boosts' }} />
+                    <Navigate to="/shop" replace state={{ view: 'boosts' }} />
                   }
                 />
                 <Route path="/staking" element={<Staking />} />

@@ -1,16 +1,18 @@
 /**
- * SegmentedToggle — the app's two-segment switcher.
+ * SegmentedToggle — the app's N-segment switcher.
  *
  * A carved, sunken track with one raised clay thumb that glides (and momentarily
- * squashes, like a liquid drop) between the two segments — the same motion
- * language as the bottom-nav indicator. Generalises the control that the Rewards
- * and Profile pages both use to merge two former screens behind one header.
+ * squashes, like a liquid drop) between the segments — the same motion language
+ * as the bottom-nav indicator. Generalises the control that the Shop and Profile
+ * pages use to merge former screens behind one header.
+ *
+ * Geometry is data-driven: `--seg-count` sizes the grid and the thumb (one slot
+ * = 100/n%), so the same component handles a 2-up Profile toggle and a 3-up Shop
+ * toggle. Pass any number of `segments`.
  *
  * Accessibility: renders an ARIA tablist with roving tabindex and Left/Right
- * arrow navigation. The parent owns the panels and must give each one
- * id={`${idPrefix}-panel-${value}`} so aria-controls resolves.
- *
- * Two segments only (the thumb geometry assumes a 2-up grid).
+ * arrow navigation across all n segments. The parent owns the panels and must
+ * give each one id={`${idPrefix}-panel-${value}`} so aria-controls resolves.
  */
 import {
   useEffect,
@@ -27,7 +29,8 @@ export interface SegmentOption<T extends string> {
 }
 
 interface SegmentedToggleProps<T extends string> {
-  segments: [SegmentOption<T>, SegmentOption<T>];
+  /** Two or more segments; geometry adapts via `--seg-count`. */
+  segments: SegmentOption<T>[];
   value: T;
   onChange: (value: T) => void;
   /** Accessible name for the tablist. */
@@ -43,6 +46,7 @@ export function SegmentedToggle<T extends string>({
   label,
   idPrefix,
 }: SegmentedToggleProps<T>) {
+  const count = segments.length;
   const activeIndex = Math.max(
     0,
     segments.findIndex((s) => s.value === value),
@@ -66,7 +70,7 @@ export function SegmentedToggle<T extends string>({
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
     e.preventDefault();
     const dir = e.key === 'ArrowRight' ? 1 : -1;
-    const next = (activeIndex + dir + segments.length) % segments.length;
+    const next = (activeIndex + dir + count) % count;
     const seg = segments[next];
     if (seg) onChange(seg.value);
   };
@@ -78,7 +82,12 @@ export function SegmentedToggle<T extends string>({
       aria-label={label}
       aria-orientation="horizontal"
       onKeyDown={onKeyDown}
-      style={{ '--active-index': activeIndex } as React.CSSProperties}
+      style={
+        {
+          '--active-index': activeIndex,
+          '--seg-count': count,
+        } as React.CSSProperties
+      }
     >
       <span className="segtab__thumb" ref={thumbRef} aria-hidden />
       {segments.map(({ value: v, label: segLabel, Icon }) => {

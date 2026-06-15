@@ -7,10 +7,10 @@
 import { useEffect, useRef, type ComponentType } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  BasketIcon as CouponIcon,
-  BoltIcon,
+  CouponIcon,
+  ShopIcon,
   TrophyIcon,
-  StakeIcon,
+  VaultIcon,
   UserIcon,
 } from './icons';
 import { useT, type MessageKey } from '../i18n';
@@ -25,9 +25,9 @@ interface NavItem {
 // Leaderboard sits dead-center of the five slots — the social peak of the loop.
 const ITEMS: NavItem[] = [
   { to: '/', labelKey: 'nav.play', Icon: CouponIcon },
-  { to: '/rewards', labelKey: 'nav.rewards', Icon: BoltIcon },
+  { to: '/shop', labelKey: 'nav.shop', Icon: ShopIcon },
   { to: '/leaderboard', labelKey: 'nav.ranks', Icon: TrophyIcon },
-  { to: '/staking', labelKey: 'nav.stake', Icon: StakeIcon },
+  { to: '/staking', labelKey: 'nav.stake', Icon: VaultIcon },
   { to: '/profile', labelKey: 'nav.profile', Icon: UserIcon },
 ];
 

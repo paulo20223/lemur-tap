@@ -26,7 +26,7 @@ export default function Profile() {
   // Default to Friends — it was the standalone screen this page replaces.
   const [tab, setTab] = useState<Tab>('friends');
 
-  const segments: [SegmentOption<Tab>, SegmentOption<Tab>] = [
+  const segments: SegmentOption<Tab>[] = [
     { value: 'profile', label: t('profile.tabProfile'), Icon: UserIcon },
     { value: 'friends', label: t('profile.tabFriends'), Icon: FriendsIcon },
   ];

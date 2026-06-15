@@ -30,6 +30,8 @@ export const UserProfileSchema = z.object({
   /** Epoch-ms timestamp the energy snapshot corresponds to. */
   energyUpdatedAt: z.number(),
   referralCode: z.string(),
+  /** Active basket tier (0 = default; raises the coupon round duration). */
+  basketTier: z.number().int(),
   createdAt: z.string(),
 });
 

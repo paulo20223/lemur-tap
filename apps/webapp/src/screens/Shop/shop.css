@@ -1,0 +1,420 @@
+/* Shop screen — the shell that hosts the Daily / Boosts / Products panels.
+   Fixed full-height column: the toggle + balance row pins to the top, the body
+   fills the rest and scrolls inside so the toggle never leaves the viewport. */
+
+.shop {
+  height: 100%;
+}
+
+/* ── Top row: segmented toggle + coin balance ────────────────────────────── */
+
+.shop__head {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+}
+
+/* The switcher is the shared <SegmentedToggle>; it grows to fill the row beside
+   the persistent balance. With 3 segments labels are shorter — let it breathe. */
+.shop__head .segtab {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Persistent coin balance — useful in every mode (Daily pays, Boosts/Products
+   spend). */
+.shop__balance {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-card);
+  padding: 9px 15px 9px 11px;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.shop__balance-coin {
+  flex: 0 0 auto;
+}
+
+/* ── Body: the active panel ──────────────────────────────────────────────── */
+
+.shop__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  /* Boosts/Products scroll here; Daily fits and stays put. Reserve the gutter
+     so the panel width never jumps between views. */
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+/* The 3-up toggle squeezes the segment padding a touch so all three labels fit
+   on narrow phones without wrapping. */
+.shop__head .segtab__seg {
+  padding-inline: 4px;
+  gap: 6px;
+}
+
+/* ── Products panel ──────────────────────────────────────────────────────── */
+
+.products {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.products__grid {
+  display: grid;
+  /* minmax(0, 1fr) — NOT the default minmax(auto, 1fr): `auto` floors each
+     column at its content's min-content width, so a long unbreakable price
+     ("3 000 000" + coin) forces the column wider than half the row and the grid
+     blows out sideways (parasitic horizontal scroll on narrow phones). The 0
+     floor lets the columns shrink to share the row; the price still fits. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap);
+}
+
+.products__center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.products__error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: rgba(255, 77, 77, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(255, 77, 77, 0.28);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.products__retry {
+  flex: 0 0 auto;
+  appearance: none;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: var(--danger);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ── Product card ────────────────────────────────────────────────────────────
+   A premium "display object": a warm clay plinth with a lit pedestal, the item
+   rendered in its real material (recoloured lemur / brushed-metal basket), and
+   an earned gold state. Premium comes from MATERIAL — specular highlights, a
+   floor shadow inside the pedestal, fine rims — not from extra colour. */
+
+.pcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 11px;
+  padding: 17px 14px 14px;
+  /* Plinth: a faint top-lit warm surface, not a flat white box. */
+  background: linear-gradient(176deg, #ffffff 0%, var(--card-sunken) 132%);
+  box-shadow: var(--shadow-card), var(--inset-gloss),
+    inset 0 -3px 7px rgba(43, 31, 24, 0.045),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+/* Equipped/active: the item is "on display" — a gold-foil rim and a warm lift,
+   so the owned piece reads as the prized one without shouting. */
+.pcard--active {
+  background: linear-gradient(176deg, #fffaf2 0%, #ffe7cf 150%);
+  box-shadow: inset 0 0 0 1.5px var(--gold),
+    0 0 0 1px rgba(255, 176, 32, 0.22), var(--inset-gloss),
+    inset 0 -3px 8px rgba(232, 134, 10, 0.12),
+    0 12px 28px -12px rgba(232, 134, 10, 0.5);
+}
+
+/* The lit pedestal — a domed disc: top specular, an inner floor the object sits
+   in, a hair rim, and a grounded contact shadow below. */
+.pcard__preview {
+  position: relative;
+  align-self: center;
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  background: radial-gradient(
+    circle at 38% 30%,
+    var(--pcard-glow, var(--accent-soft)) 0%,
+    var(--pcard-accent, var(--accent)) 100%
+  );
+  box-shadow: inset 0 3px 5px rgba(255, 255, 255, 0.7),
+    inset 0 -8px 13px -4px rgba(43, 31, 24, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.45),
+    0 9px 17px -8px rgba(43, 31, 24, 0.36);
+}
+
+.pcard__preview > *:not(.pcard__sheen) {
+  position: relative;
+  z-index: 1;
+}
+
+/* A single light band sweeps each pedestal once on reveal — the "premium
+   unboxing" glint. Silenced under reduced-motion by the global rule. */
+.pcard__sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    118deg,
+    transparent 34%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 64%
+  );
+  transform: translateX(-130%);
+  animation: pcard-sheen 1s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+  pointer-events: none;
+}
+
+@keyframes pcard-sheen {
+  to {
+    transform: translateX(130%);
+  }
+}
+
+/* Skin preview: the actual in-game lemur, recoloured by the --lemur-* vars set
+   inline per skin — so the card shows EXACTLY the mascot you'll play with.
+   The disc is kept semi-transparent (≈50%) so it reads as a soft tinted halo
+   the lemur floats on, letting the warm plinth show through rather than a solid
+   colour puck. The base .pcard__preview insets (specular/floor/rim) still apply. */
+.pcard__preview--lemur {
+  font-size: 0;
+  background: radial-gradient(
+    circle at 38% 30%,
+    color-mix(in srgb, var(--pcard-glow, var(--accent-soft)) 50%, transparent) 0%,
+    color-mix(in srgb, var(--pcard-accent, var(--accent)) 50%, transparent) 100%
+  );
+}
+
+.pcard__lemur {
+  display: block;
+  width: 82%;
+  margin-top: 10%;
+  filter: drop-shadow(0 4px 5px rgba(43, 31, 24, 0.32));
+}
+
+.pcard__lemur svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Per-skin sheen, mirroring the in-game treatment (scene2d / CouponGame.css). */
+.pcard__preview--lemur[data-skin='dealer'] .pcard__lemur {
+  filter: drop-shadow(0 4px 5px rgba(43, 31, 24, 0.32)) saturate(1.1) brightness(1.02);
+}
+.pcard__preview--lemur[data-skin='broker'] .pcard__lemur {
+  filter: drop-shadow(0 4px 5px rgba(43, 31, 24, 0.32)) saturate(1.04);
+}
+.pcard__preview--lemur[data-skin='magnate'] .pcard__lemur {
+  filter: drop-shadow(0 4px 5px rgba(43, 31, 24, 0.32)) saturate(1.08);
+}
+.pcard__preview--lemur[data-skin='oligarch'] .pcard__lemur {
+  filter: drop-shadow(0 4px 5px rgba(43, 31, 24, 0.32)) saturate(1.08);
+}
+.pcard__preview--lemur[data-skin='patron'] .pcard__lemur {
+  filter: drop-shadow(0 4px 5px rgba(43, 31, 24, 0.32)) saturate(1.1) brightness(1.03);
+}
+
+/* Basket preview: the real in-game woven basket (BASKET_SVG), recoloured by the
+   tier's --basket-fill / --basket-dark — so the card shows EXACTLY the catcher
+   you'll play with, exactly as the skin card shows the real lemur. The disc is a
+   barely-there tinted halo; the pedestal box-shadow (specular + floor + rim) is
+   dropped so the round genuinely reads transparent rather than as a solid puck —
+   the woven basket floats on the warm plinth, grounded only by its own shadow. */
+.pcard__preview--basket {
+  background: radial-gradient(
+    circle at 38% 30%,
+    color-mix(in srgb, var(--basket-fill, var(--accent-soft)) 12%, transparent) 0%,
+    color-mix(in srgb, var(--basket-dark, var(--accent)) 15%, transparent) 100%
+  );
+  box-shadow: none;
+}
+
+.pcard__basket {
+  display: block;
+  filter: drop-shadow(0 3px 4px rgba(43, 31, 24, 0.3));
+}
+
+.pcard__basket svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The precious-metal tiers earn a touch more lustre on the weave itself. */
+.pcard__preview--basket[data-material='silver'] .pcard__basket,
+.pcard__preview--basket[data-material='gold'] .pcard__basket {
+  filter: drop-shadow(0 3px 4px rgba(43, 31, 24, 0.32)) saturate(1.06) brightness(1.02);
+}
+
+/* The "on display" seal — a gold wax stamp on the card corner. Only the
+   equipped skin / active basket earns it. */
+.pcard__seal {
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: var(--gold-grad);
+  color: #6e4d0c;
+  box-shadow: var(--inset-gloss), inset 0 0 0 1px rgba(255, 255, 255, 0.5),
+    0 3px 7px -2px rgba(232, 134, 10, 0.6);
+}
+
+.pcard__name {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* The basket's value stat — a quiet gold/amber chip (thematic to the gold tier
+   ladder), deliberately calmer than orange so the single orange coin CTA stays
+   the card's focal point. */
+.pcard__effect {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #8a5a08;
+  background: color-mix(in srgb, var(--gold) 15%, var(--card));
+  border-radius: var(--radius-pill);
+  padding: 4px 11px;
+  align-self: center;
+  box-shadow: inset 0 0 0 1px rgba(232, 134, 10, 0.16);
+}
+
+/* Footer (status OR buy actions) sticks to the bottom so CTAs align across a
+   row of unequal-height cards. */
+.pcard__status,
+.pcard__actions {
+  margin-top: auto;
+}
+
+/* Status line for owned/active/equipped states (replaces the buy button). */
+.pcard__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.pcard__status--active {
+  color: #6e4d0c;
+  background: var(--gold-grad);
+  box-shadow: var(--inset-gloss), inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+    0 4px 12px -6px rgba(232, 134, 10, 0.55);
+}
+
+.pcard__status--owned {
+  color: var(--text-dim);
+  background: var(--card-sunken);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+/* ── Dual-currency buy block ──────────────────────────────────────────────
+   A cohesive pair: coins = primary (orange, earned soft currency), Stars =
+   secondary (gold, the premium currency). Both share the same footprint, pill
+   radius and icon+number layout so the two payment options read as one block,
+   not a strong button plus a weak chip. */
+
+.pcard__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pcard__buy {
+  width: 100%;
+  height: 40px;
+  min-height: 0;
+  padding: 0 10px;
+  font-size: 15px;
+}
+
+.pcard__price {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Stars button — twin of the coin CTA in the gold "precious currency" language:
+   a soft amber surface, a hairline gold ring, deep-gold text, premium without
+   shouting. Tappable inside Telegram; calmly disabled outside it. */
+.pcard__stars {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(180deg, #fff6e3 0%, #ffe9c4 100%);
+  box-shadow: inset 0 0 0 1px rgba(232, 134, 10, 0.3), var(--inset-gloss);
+  color: #8a5a08;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.05s ease,
+    box-shadow 0.15s ease;
+}
+
+.pcard__stars:hover:not(:disabled) {
+  background: linear-gradient(180deg, #fff0d2 0%, #ffe0ad 100%);
+  box-shadow: inset 0 0 0 1px rgba(232, 134, 10, 0.42), var(--inset-gloss);
+}
+
+.pcard__stars:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.pcard__stars:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* The star glyph reads bright gold against the deep-gold price text. */
+.pcard__stars-icon {
+  color: var(--gold);
+  filter: drop-shadow(0 1px 0.5px rgba(184, 106, 8, 0.35));
+}
+
+@media (max-width: 340px) {
+  .products__grid {
+    grid-template-columns: 1fr;
+  }
+}

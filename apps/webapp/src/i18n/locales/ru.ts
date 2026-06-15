@@ -21,9 +21,9 @@ export const ru = {
 
   nav: {
     play: 'Игра',
-    rewards: 'Награды',
+    shop: 'Магазин',
     ranks: 'Рейтинг',
-    stake: 'Стейкинг',
+    stake: 'Банк',
     profile: 'Профиль',
   },
 
@@ -67,11 +67,46 @@ export const ru = {
     },
   },
 
-  rewards: {
-    daily: 'Бонус',
-    boosts: 'Бусты',
-    sectionLabel: 'Раздел наград',
+  shop: {
+    tabDaily: 'Бонус',
+    tabBoosts: 'Бусты',
+    tabProducts: 'Товары',
+    sectionLabel: 'Раздел магазина',
+    productsLabel: 'Раздел товаров',
     yourCoins: 'Твои монеты',
+    skinsTitle: 'Лемустеры',
+    basketsTitle: 'Корзины',
+    basketName: 'Корзина · тир {tier}',
+    basketKraft: 'Картонная',
+    basketCanvas: 'Холщовая',
+    basketLeather: 'Кожаная',
+    basketBronze: 'Бронзовая',
+    basketSilver: 'Серебряная',
+    basketGold: 'Золотая',
+    basketBase: 'Базовая',
+    roundBonus: '+{n}с к раунду',
+    buy: 'Купить',
+    buying: 'Покупка…',
+    equip: 'Экипировать',
+    equipping: 'Экипируем…',
+    equipped: 'Экипировано',
+    active: 'Активна',
+    owned: 'Куплено',
+    soon: 'Скоро',
+    starsSoon: 'Оплата Stars скоро будет доступна',
+    buyStars: 'Оплатить Stars',
+    starsPending: 'Подтверждаем оплату…',
+    notEnoughCoins: 'Не хватает монет',
+    failedLoad: 'Не удалось загрузить магазин. Попробуй снова.',
+    errors: {
+      insufficientCoins: 'Не хватает монет.',
+      alreadyOwned: 'Этот товар уже куплен.',
+      notOwned: 'Сначала купи этот скин.',
+      unknownItem: 'Неизвестный товар.',
+      starsNotAvailable: 'Оплата Stars пока недоступна.',
+      starsFailed: 'Оплата Stars не удалась. Попробуй снова.',
+      generic: 'Что-то пошло не так. Попробуй снова.',
+    },
   },
 
   daily: {
@@ -131,11 +166,12 @@ export const ru = {
       effect: '+{energy} энергии',
       buy: 'Купить буст',
       buying: 'Покупка…',
+      dailyLimit: 'Дневной лимит бустов исчерпан. Возвращайся завтра.',
     },
   },
 
   staking: {
-    title: 'Стейкинг',
+    title: 'Банк',
     tiers: {
       flex: 'Гибкий',
       lock: 'Фикс',

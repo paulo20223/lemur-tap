@@ -21,6 +21,7 @@ import { ClockIcon, TrophyIcon, EnergyIcon, CoinIcon, GiftIcon } from '../../com
 import { useT, type MessageKey } from '../../i18n';
 import { buildSpawnSchedule, type SpawnSpec } from './engine';
 import { createScene, type SceneHandle } from './scene2d';
+import { skinVariant, resolveSkinId } from '../Shop/skins';
 import styles from './CouponGame.module.css';
 
 type Phase = 'idle' | 'countdown' | 'playing' | 'finishing' | 'result';
@@ -58,6 +59,11 @@ export default function CouponGame() {
   const energy = useGameStore((s) => s.energy);
   const applyProfile = useGameStore((s) => s.applyProfile);
   const setEnergyFromServer = useGameStore((s) => s.setEnergyFromServer);
+  const equippedSkinId = useGameStore((s) => s.shopCatalog?.equippedSkinId ?? null);
+  const basketTier = useGameStore(
+    (s) => s.shopCatalog?.basketTier ?? s.profile?.basketTier ?? 0,
+  );
+  const loadShopCatalog = useGameStore((s) => s.loadShopCatalog);
 
   const [phase, setPhase] = useState<Phase>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +89,12 @@ export default function CouponGame() {
   // Pause bookkeeping for visibility/off-screen.
   const pausedRef = useRef(false);
 
-  const durationSec = config ? config.couponSessionDurationMs / 1000 : 30;
+  // Round length is authoritative from the server (base + active basket bonus,
+  // spec/app/13): coupon.start returns the effective durationMs. Before a round
+  // starts we show the base config duration as a preview.
+  const baseDurationSec = config ? config.couponSessionDurationMs / 1000 : 30;
+  const [roundDurationSec, setRoundDurationSec] = useState(baseDurationSec);
+  const durationSec = phase === 'idle' ? baseDurationSec : roundDurationSec;
   const cost = config?.couponSessionCost ?? 500;
   const canAfford = energy >= cost;
 
@@ -95,6 +106,27 @@ export default function CouponGame() {
   useEffect(() => {
     phaseRef.current = phase;
   }, [phase]);
+
+  // Ensure the shop catalog (which carries equippedSkinId) is loaded so the
+  // lemur renders in the player's chosen skin. Best-effort; failure is silent
+  // (the lemur just shows the default look).
+  useEffect(() => {
+    if (equippedSkinId === null) void loadShopCatalog().catch(() => undefined);
+    // Load once on mount if not already present.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Apply the equipped cosmetic skin to the lemur catcher whenever it changes
+  // (and on first scene mount). Graceful fallback to 'classic'.
+  useEffect(() => {
+    const skinId = resolveSkinId(equippedSkinId);
+    sceneRef.current?.setSkin(skinId, skinVariant(skinId).accent);
+  }, [equippedSkinId]);
+
+  // Recolour the woven basket to the active tier's metal (wicker/silver/gold).
+  useEffect(() => {
+    sceneRef.current?.setBasket(basketTier);
+  }, [basketTier]);
 
   // ── Create the 2D scene once the stage mounts ───────────────────────────────
   useEffect(() => {
@@ -112,6 +144,7 @@ export default function CouponGame() {
         couponBadge: styles.couponBadge ?? '',
         catcher: styles.catcher ?? '',
         pop: styles.pop ?? '',
+        burst: styles.burst ?? '',
       },
       onScore: (points) => {
         scoreRef.current += points;
@@ -119,6 +152,15 @@ export default function CouponGame() {
       },
     });
     sceneRef.current = handle;
+
+    // Apply the currently-equipped skin straight away (the dedicated effect may
+    // have run before the scene existed on first mount).
+    const snapshot = useGameStore.getState();
+    const skinId = resolveSkinId(snapshot.shopCatalog?.equippedSkinId);
+    handle.setSkin(skinId, skinVariant(skinId).accent);
+    handle.setBasket(
+      snapshot.shopCatalog?.basketTier ?? snapshot.profile?.basketTier ?? 0,
+    );
 
     const applySize = () => {
       handle.resize(stage.clientWidth, stage.clientHeight);
@@ -255,13 +297,16 @@ export default function CouponGame() {
     try {
       const res = await apiClient.couponStart();
       sessionRef.current = { sessionId: res.sessionId, seed: res.seed };
+      // Server-authoritative round length (base + active basket bonus).
+      const dur = res.durationMs / 1000;
+      setRoundDurationSec(dur);
       // Optimistically reflect the energy spend (server already debited it).
       setEnergyFromServer(Math.max(0, energy - cost));
 
       // Build the deterministic spawn schedule from the server seed.
       scheduleRef.current = buildSpawnSchedule(
         res.seed,
-        durationSec,
+        dur,
         config.couponMaxPointsPerSec,
       );
       spawnIdxRef.current = 0;
@@ -269,7 +314,7 @@ export default function CouponGame() {
       basketXRef.current = 0.5;
       sceneRef.current?.setBasketX(0.5);
       setScore(0);
-      setTimeLeft(durationSec);
+      setTimeLeft(dur);
       setCountdown(3);
       setPhase('countdown');
     } catch (e) {
@@ -280,7 +325,7 @@ export default function CouponGame() {
     } finally {
       setStarting(false);
     }
-  }, [config, starting, phase, energy, cost, durationSec, setEnergyFromServer, t]);
+  }, [config, starting, phase, energy, cost, setEnergyFromServer, t]);
 
   // Countdown 3..2..1 then kick off the RAF loop.
   useEffect(() => {

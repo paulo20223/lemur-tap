@@ -146,23 +146,47 @@ export function couponReward(
 }
 
 /**
+ * Effective coupon round duration (ms) given the user's active basket tier.
+ * = couponSessionDurationMs + the active tier's durationBonusMs (spec/app/13).
+ * The tier is matched by its `tier` field (the catalog now includes the free
+ * tier 0 «Картонная», bonus 0). An unknown tier (missing config) contributes 0
+ * (graceful fallback). Single source both client and server use to size a round.
+ *
+ * @param cfg        live game config
+ * @param basketTier the user's owned/active basket tier (0 = default)
+ */
+export function effectiveCouponDurationMs(
+  cfg: GameConfig,
+  basketTier: number,
+): number {
+  const bonus =
+    cfg.baskets.find((b) => b.tier === basketTier)?.durationBonusMs ?? 0;
+  return cfg.couponSessionDurationMs + bonus;
+}
+
+/**
  * Deterministic anti-cheat ceiling on an acceptable score.
- * Computed from the server-measured elapsed time, clamped to round duration.
- * Accepted scores satisfy 0 <= score <= couponMaxScore(...).
+ * Computed from the server-measured elapsed time, clamped to the round
+ * duration. Accepted scores satisfy 0 <= score <= couponMaxScore(...).
  * `seed` reserved for future per-coupon layout verification.
  *
  * @param seed       server seed (reserved; deterministic layout hook)
- * @param elapsedSec actual elapsed seconds, clamped to round duration
+ * @param elapsedSec actual elapsed seconds, clamped to `durationMs`
+ * @param cfg        live game config
+ * @param durationMs effective round duration in ms (default = base round
+ *                   duration); pass effectiveCouponDurationMs(cfg, basketTier)
+ *                   so a basket-extended round clamps to its real length
  */
 export function couponMaxScore(
   seed: number,
   elapsedSec: number,
   cfg: GameConfig,
+  durationMs: number = cfg.couponSessionDurationMs,
 ): number {
   void seed;
   const cappedElapsed = Math.min(
     Math.max(0, elapsedSec),
-    cfg.couponSessionDurationMs / 1000,
+    durationMs / 1000,
   );
   return Math.floor(cappedElapsed * cfg.couponMaxPointsPerSec);
 }

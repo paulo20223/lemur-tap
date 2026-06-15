@@ -20,6 +20,7 @@ import type { ContractRouterClient } from '@orpc/contract';
 import {
   contract,
   type AuthTelegramResponse,
+  type ShopCurrency,
   type StakingBoost,
   type StakingTier,
   type UpgradeType,
@@ -172,6 +173,26 @@ export const apiClient = {
   /** staking.boost — buy one level of a boost for an active position. */
   boostStake: (stakeId: string, boost: StakingBoost) =>
     call(() => rpc.staking.boost({ stakeId, boost })),
+
+  // ── Shop ──────────────────────────────────────────────────────────────────
+  /** shop.catalog — baskets + skins enriched with ownership/equip state. */
+  shopCatalog: () => call(() => rpc.shop.catalog()),
+  /** shop.buyBasket — buy a basket tier with the chosen currency. */
+  buyBasket: (tier: number, currency: ShopCurrency) =>
+    call(() => rpc.shop.buyBasket({ tier, currency })),
+  /** shop.buySkin — buy a cosmetic skin with the chosen currency. */
+  buySkin: (skinId: string, currency: ShopCurrency) =>
+    call(() => rpc.shop.buySkin({ skinId, currency })),
+  /** shop.equipSkin — equip an owned skin. */
+  equipSkin: (skinId: string) => call(() => rpc.shop.equipSkin({ skinId })),
+  /**
+   * shop.createStarsInvoice — request a Telegram Stars invoice link for a goods
+   * item. `ref` is the basket tier as a string for kind 'basket', or the skinId
+   * for kind 'skin'. The grant happens server-side on successful_payment, so the
+   * client must reload the catalog to observe ownership.
+   */
+  createStarsInvoice: (kind: 'basket' | 'skin', ref: string) =>
+    call(() => rpc.shop.createStarsInvoice({ kind, ref })),
 
   // ── Referral ──────────────────────────────────────────────────────────────
   /** referral.list — code, link, earnings and paginated referee list. */

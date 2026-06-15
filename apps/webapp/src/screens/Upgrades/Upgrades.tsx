@@ -113,9 +113,13 @@ export default function Upgrades() {
         });
       }
     } catch (e) {
-      setError(
-        e instanceof ApiClientError ? e.message : t('upgrades.purchaseFailed'),
-      );
+      if (e instanceof ApiClientError && e.code === 'coupon_boost_limit') {
+        setError(t('upgrades.boost.dailyLimit'));
+      } else {
+        setError(
+          e instanceof ApiClientError ? e.message : t('upgrades.purchaseFailed'),
+        );
+      }
     } finally {
       setBoostBuying(false);
     }

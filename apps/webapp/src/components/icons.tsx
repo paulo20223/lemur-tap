@@ -75,7 +75,75 @@ export const BasketIcon = ({ size = 24, className }: IconProps) => (
   </svg>
 );
 
+/**
+ * Telegram Stars glyph — a clean, slightly rounded 5-point star, filled with
+ * currentColor so the Stars buy button tints it gold. Replaces the ⭐ emoji
+ * (which renders inconsistently and reads unpremium).
+ */
+export const StarIcon = ({ size = 24, className }: IconProps) => (
+  <svg {...svgProps(size, className)}>
+    <path
+      fill="currentColor"
+      stroke="currentColor"
+      strokeWidth={1.1}
+      strokeLinejoin="round"
+      d="M12 3.4a.9.9 0 0 1 .82.52l2.2 4.62 5.04.72a.9.9 0 0 1 .5 1.54l-3.66 3.5.88 5.02a.9.9 0 0 1-1.31.95L12 18.4l-4.47 2.38a.9.9 0 0 1-1.31-.95l.88-5.02-3.66-3.5a.9.9 0 0 1 .5-1.54l5.04-.72 2.2-4.62A.9.9 0 0 1 12 3.4Z"
+    />
+  </svg>
+);
+
 export const DailyIcon = GiftIconBody;
+
+/**
+ * Coupon ticket — the Play tab (the coupon-catching game).
+ *
+ * A voucher with a vertical tear-perforation that splits it into a main panel
+ * and a stub, twin concave notches where the perforation meets the edges, and a
+ * four-point sparkle on the main panel reading as "reward/value". Pure line work
+ * on `currentColor` so it inherits the nav's active (white-on-clay) state and
+ * focus ring exactly like its neighbours.
+ */
+export const CouponIcon = ({ size = 24, className }: IconProps) => (
+  <svg {...svgProps(size, className)}>
+    {/* ticket body: rounded rect with concave notches top & bottom at the tear */}
+    <path
+      {...BASE}
+      d="M5 6H12.6A1.4 1.4 0 0 0 15.4 6H19A2 2 0 0 1 21 8V16A2 2 0 0 1 19 18H15.4A1.4 1.4 0 0 0 12.6 18H5A2 2 0 0 1 3 16V8A2 2 0 0 1 5 6Z"
+    />
+    {/* tear perforation */}
+    <path {...BASE} strokeDasharray="0.1 2.1" d="M14 7.7V16.3" />
+    {/* four-point sparkle on the main panel — pointed tips via miter join */}
+    <path
+      {...BASE}
+      strokeLinejoin="miter"
+      strokeMiterlimit={10}
+      d="M8.4 9.1Q8.4 12 11 12Q8.4 12 8.4 14.9Q8.4 12 5.8 12Q8.4 12 8.4 9.1Z"
+    />
+  </svg>
+);
+
+/** Price tag — the "Товары" goods catalog (baskets + skins). */
+export const TagIcon = ({ size = 24, className }: IconProps) => (
+  <svg {...svgProps(size, className)}>
+    <path
+      {...BASE}
+      d="M4 4.5h6.2a2 2 0 0 1 1.42.59l7.3 7.3a2 2 0 0 1 0 2.82l-5.32 5.32a2 2 0 0 1-2.82 0l-7.3-7.3A2 2 0 0 1 3 11.7V5.5a1 1 0 0 1 1-1Z"
+    />
+    <circle {...BASE} cx="8" cy="8.5" r="1.4" />
+  </svg>
+);
+
+/** Theatrical mask — the cosmetic "Lemusters" skins section. */
+export const SkinIcon = ({ size = 24, className }: IconProps) => (
+  <svg {...svgProps(size, className)}>
+    <path
+      {...BASE}
+      d="M5 5.5c3 .8 11 .8 14 0 .6 4-.4 9.5-3 12.2-1.3 1.3-2.7 2-4 2s-2.7-.7-4-2C5.4 15 4.4 9.5 5 5.5Z"
+    />
+    <path {...BASE} d="M9 10c.8-.6 1.7-.6 2.4 0M12.6 10c.7-.6 1.6-.6 2.4 0" />
+    <path {...BASE} d="M10.4 14.5c1 .7 2.2.7 3.2 0" />
+  </svg>
+);
 
 export const BoostsIcon = ({ size = 24, className }: IconProps) => (
   <svg {...svgProps(size, className)}>
@@ -88,6 +156,18 @@ export const BoostsIcon = ({ size = 24, className }: IconProps) => (
 
 /** Lightning bolt — the Rewards hub (daily bonus + boosts). */
 export const BoltIcon = BoostsIcon;
+
+/** Storefront with awning — the Магазин hub (daily + boosts + goods). */
+export const ShopIcon = ({ size = 24, className }: IconProps) => (
+  <svg {...svgProps(size, className)}>
+    {/* awning */}
+    <path {...BASE} d="M4 4.5h16l1 4.5a2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1-2 0L4 4.5Z" />
+    {/* shop body */}
+    <path {...BASE} d="M5 10.2V20h14v-9.8" />
+    {/* door */}
+    <path {...BASE} d="M10 20v-5h4v5" />
+  </svg>
+);
 
 export const StakeIcon = ({ size = 24, className }: IconProps) => (
   <svg {...svgProps(size, className)}>

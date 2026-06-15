@@ -97,6 +97,25 @@
   display: block;
 }
 
+/* Equipped cosmetic skin badge (spec/app/13) — a small glyph chip pinned to the
+   avatar's lower-right, tinted by the skin accent. */
+.prof-avatar__skin {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  border-radius: 50%;
+  background: var(--ref-card, #fff);
+  box-shadow: 0 0 0 2px var(--skin-accent, var(--ref-line-strong)),
+    0 2px 6px -2px rgba(122, 74, 30, 0.4);
+}
+
 .prof-avatar[data-premium] {
   color: var(--ref-gold-ink);
   border-color: var(--ref-gold-line);

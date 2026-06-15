@@ -7,6 +7,7 @@ import { UpgradesModule } from '../upgrades/upgrades.module';
 import { CouponModule } from '../coupon/coupon.module';
 import { DailyModule } from '../daily/daily.module';
 import { StakingModule } from '../staking/staking.module';
+import { ShopModule } from '../shop/shop.module';
 import { ReferralModule } from '../referral/referral.module';
 import { LeaderboardModule } from '../leaderboard/leaderboard.module';
 import { OrpcController } from './orpc.controller';
@@ -27,6 +28,7 @@ import { OrpcHandlerService } from './orpc-handler.service';
     CouponModule,
     DailyModule,
     StakingModule,
+    ShopModule,
     ReferralModule,
     LeaderboardModule,
   ],

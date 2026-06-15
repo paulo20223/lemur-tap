@@ -50,13 +50,15 @@ export const contract = {
 
 ## Typed errors
 
-Доменные коды ошибок (`shared/src/errors.ts`, 16 шт.) объявляются как typed errors на тех процедурах, где они осмысленны:
+Доменные коды ошибок (`shared/src/errors.ts`) объявляются как typed errors на тех процедурах, где они осмысленны:
 
 - `tap` → `INSUFFICIENT_ENERGY`
 - `upgrades.buy` → `INSUFFICIENT_COINS`, `UNKNOWN_TYPE`, `MAX_LEVEL`
 - `fruit.*` → `SESSION_ACTIVE`, `SESSION_NOT_FOUND`, `SESSION_REJECTED`, `SESSION_EXPIRED`, `INSUFFICIENT_COINS`
 - `daily.claim` → `DAILY_ALREADY_CLAIMED`
 - `staking.*` → `AMOUNT_BELOW_MIN`, `STAKE_LOCKED`, `STAKE_NOT_FOUND`, `UNKNOWN_TIER`, `INSUFFICIENT_COINS`
+- `shop.buyBasket` / `shop.buySkin` → `INSUFFICIENT_COINS`, `ALREADY_OWNED`, `UNKNOWN_ITEM`, `STARS_NOT_AVAILABLE`
+- `shop.equipSkin` → `NOT_OWNED`, `UNKNOWN_ITEM`
 
 Общие (`unauthorized`, `token_expired`, `rate_limited`, `invalid_request`) не обязательно объявлять пер-процедуру — они приходят как стандартные `ORPCError` коды (`UNAUTHORIZED`, `TOO_MANY_REQUESTS`, `BAD_REQUEST`) с доменным `code` в `data` (см. error-mapping в [03 — Сервер](./03-server.md)).
 

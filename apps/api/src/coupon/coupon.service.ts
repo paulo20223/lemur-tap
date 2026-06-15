@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import {
   couponMaxScore,
   couponReward,
+  effectiveCouponDurationMs,
   type CouponBoostResponse,
   type CouponStartResponse,
   type CouponFinishResponse,
@@ -36,25 +37,36 @@ export class CouponService {
     const now = Date.now();
 
     return this.prisma.$transaction(async (tx) => {
-      // Lazily expire a stale active session, freeing the one-active invariant.
+      // Lazily expire a session whose finish window already elapsed: the player
+      // had their chance to finish, so its cost is NOT refunded.
       await tx.couponGameSession.updateMany({
         where: { userId, status: 'active', expiresAt: { lt: new Date(now) } },
         data: { status: 'expired' },
       });
 
-      // Enforce one active session per user.
-      const active = await tx.couponGameSession.findFirst({
+      // A session still within its window means the previous round never
+      // finished — typically the client lost the connection (e.g. on a server
+      // restart) and will never send finish. Rather than hard-block the new
+      // round with SESSION_ACTIVE until it times out, abandon it and refund its
+      // session cost below, so the player can start a fresh round immediately.
+      // The seed never affects the score ceiling (couponMaxScore ignores it), so
+      // re-rolling the round carries no economic advantage.
+      const abandoned = await tx.couponGameSession.updateMany({
         where: { userId, status: 'active' },
-        select: { id: true },
+        data: { status: 'abandoned', finishedAt: new Date(now) },
       });
-      if (active) {
-        throw AppError.sessionActive();
-      }
+      const refundEnergy = abandoned.count > 0 ? cfg.couponSessionCost : 0;
 
       // Recompute energy lazily and ensure the player can afford the round.
       const user = await tx.user.findUnique({
         where: { id: userId },
-        select: { id: true, energy: true, energyUpdatedAt: true, version: true },
+        select: {
+          id: true,
+          energy: true,
+          energyUpdatedAt: true,
+          version: true,
+          basketTier: true,
+        },
       });
       if (!user) {
         throw AppError.unauthorized('User not found');
@@ -62,15 +74,27 @@ export class CouponService {
       const stats = await this.economy.getEffectiveStats(userId, tx);
       const snapshot = await this.economy.recomputeEnergy(user, now, stats);
 
-      if (snapshot.energy < cfg.couponSessionCost) {
+      // Effective round duration includes the active basket's bonus (spec/app/13);
+      // single shared source so client and server size the round identically.
+      const durationMs = effectiveCouponDurationMs(cfg, user.basketTier);
+
+      // Credit back the abandoned round's cost (clamped to the bar) before
+      // charging the new one — net-zero when nothing was abandoned.
+      const energyAvailable = Math.min(
+        snapshot.maxEnergy,
+        snapshot.energy + refundEnergy,
+      );
+
+      if (energyAvailable < cfg.couponSessionCost) {
         throw AppError.insufficientEnergy();
       }
 
-      // Debit the session cost from the recomputed energy (not refunded).
+      // Debit the session cost from the (refund-adjusted) energy — also not
+      // refunded once this round actually starts.
       const updated = await tx.user.updateMany({
         where: { id: userId, version: user.version },
         data: {
-          energy: snapshot.energy - cfg.couponSessionCost,
+          energy: energyAvailable - cfg.couponSessionCost,
           energyUpdatedAt: BigInt(snapshot.energyUpdatedAt),
           version: { increment: 1 },
         },
@@ -82,7 +106,7 @@ export class CouponService {
 
       const startedAt = new Date(now);
       const expiresAt = new Date(
-        now + cfg.couponSessionDurationMs + cfg.couponFinishGraceMs,
+        now + durationMs + cfg.couponFinishGraceMs,
       );
       // Server-generated seed for deterministic client-side coupon layout.
       const seed = randomInt(0, 2 ** 31);
@@ -98,13 +122,14 @@ export class CouponService {
         select: { id: true },
       });
 
-      return { sessionId: session.id, seed };
+      return { sessionId: session.id, seed, durationMs };
     });
   }
 
   // ── POST /coupon/boost ─────────────────────────────────────────────────────
   /**
    * Buy the one-shot coupon boost (spec/app/06 §"Буст"). Atomically:
+   *  - enforces the per-UTC-day purchase cap (couponBoostDailyCap),
    *  - debits couponBoostPrice coins (ledger type 'coupon_boost'),
    *  - refills energy by couponBoostEnergyGrant (clamped to maxEnergy),
    * so the player can immediately play one more round.
@@ -120,6 +145,21 @@ export class CouponService {
       });
       if (!user) {
         throw AppError.unauthorized('User not found');
+      }
+
+      // Enforce the per-UTC-day purchase cap by counting today's 'coupon_boost'
+      // ledger rows (the ledger is the authoritative record of every purchase).
+      const startOfUtcDay = new Date(now);
+      startOfUtcDay.setUTCHours(0, 0, 0, 0);
+      const boughtToday = await tx.ledgerEntry.count({
+        where: {
+          userId,
+          type: 'coupon_boost',
+          createdAt: { gte: startOfUtcDay },
+        },
+      });
+      if (boughtToday >= cfg.couponBoostDailyCap) {
+        throw AppError.couponBoostLimit();
       }
 
       // Recompute energy lazily so the grant tops up the live (regenerated) bar.
@@ -191,11 +231,28 @@ export class CouponService {
       if (session.status === 'expired') {
         throw AppError.sessionExpired();
       }
+      // Abandoned by a later start() (the previous round was orphaned and its
+      // cost refunded); a late finish for it is no longer valid.
+      if (session.status === 'abandoned') {
+        throw AppError.sessionExpired();
+      }
       // status === 'active' below.
+
+      // Effective round duration (base + active basket bonus, spec/app/13). The
+      // server stays authoritative via the real elapsed clamp; we size the
+      // earliest-finish gate and the anti-cheat ceiling to this length.
+      const finisher = await tx.user.findUnique({
+        where: { id: userId },
+        select: { basketTier: true },
+      });
+      if (!finisher) {
+        throw AppError.unauthorized('User not found');
+      }
+      const durationMs = effectiveCouponDurationMs(cfg, finisher.basketTier);
 
       const startedMs = session.startedAt.getTime();
       const expiresMs = session.expiresAt.getTime();
-      const earliestFinishMs = startedMs + cfg.couponSessionDurationMs;
+      const earliestFinishMs = startedMs + durationMs;
 
       // Finish too late: expire the session, no reward.
       if (now > expiresMs) {
@@ -215,11 +272,11 @@ export class CouponService {
         throw AppError.sessionRejected();
       }
 
-      // Anti-cheat ceiling from the ACTUAL server-measured elapsed.
-      const elapsedSec =
-        Math.min(now - startedMs, cfg.couponSessionDurationMs) / 1000;
+      // Anti-cheat ceiling from the ACTUAL server-measured elapsed, clamped to
+      // the basket-extended round duration.
+      const elapsedSec = Math.min(now - startedMs, durationMs) / 1000;
       const seedNum = Number(session.seed);
-      const maxScore = couponMaxScore(seedNum, elapsedSec, cfg);
+      const maxScore = couponMaxScore(seedNum, elapsedSec, cfg, durationMs);
 
       // Validate the self-reported score against the ceiling.
       if (!Number.isInteger(score) || score < 0 || score > maxScore) {

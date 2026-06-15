@@ -74,7 +74,9 @@ export function buildSpawnSchedule(
     total += brand.points;
 
     // Gap between spawns: dense enough to be lively, sparse enough to be fair.
-    const gap = 0.9 + rand() * 1.1;
+    // Tuned so a full catch-everything round totals ~55–60 points (≈24–25
+    // coupons over a 30s round at ~2.47 avg points/coupon).
+    const gap = 0.7 + rand() * 0.9;
     t += gap;
   }
 

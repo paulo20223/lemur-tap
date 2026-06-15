@@ -66,7 +66,9 @@ export type LedgerType =
   | 'stake_yield'
   | 'stake_boost'
   | 'referral'
-  | 'upgrade';
+  | 'upgrade'
+  | 'basket_purchase'
+  | 'skin_purchase';
 
 export const LEDGER_TYPES = [
   'coupon',
@@ -78,6 +80,8 @@ export const LEDGER_TYPES = [
   'stake_boost',
   'referral',
   'upgrade',
+  'basket_purchase',
+  'skin_purchase',
 ] as const;
 
 /**
@@ -89,7 +93,14 @@ export type RefSource = 'join' | 'premium' | 'passive';
 export const REF_SOURCES = ['join', 'premium', 'passive'] as const;
 
 /** Coupon game session lifecycle. See spec/app/06-coupon-game.md. */
-export type CouponSessionStatus = 'active' | 'finished' | 'rejected' | 'expired';
+export type CouponSessionStatus =
+  | 'active'
+  | 'finished'
+  | 'rejected'
+  | 'expired'
+  // Orphaned active round, superseded & refunded by a later start() (e.g. after
+  // a server restart dropped the client's finish). See coupon.service.ts.
+  | 'abandoned';
 
 /** Stake lifecycle. See spec/app/08-staking.md. */
 export const STAKE_STATUSES = ['active', 'closed'] as const;

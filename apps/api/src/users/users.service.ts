@@ -55,6 +55,7 @@ export class UsersService {
       energyRegen: snapshot.energyRegen,
       energyUpdatedAt: snapshot.energyUpdatedAt,
       referralCode: user.referralCode,
+      basketTier: user.basketTier,
       createdAt: user.createdAt.toISOString(),
     };
   }

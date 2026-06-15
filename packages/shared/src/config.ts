@@ -60,6 +60,41 @@ export const StakingBoostConfigSchema = z.object({
 export type StakingBoostConfig = z.infer<typeof StakingBoostConfigSchema>;
 
 /**
+ * Shop — basket tier (spec/app/13). A basket is a permanent purchase that
+ * lengthens the coupon round (`durationBonusMs`); the best owned tier is always
+ * active. Each tier carries both prices (coins now; Stars reserved for phase 4).
+ */
+export const BasketTierConfigSchema = z.object({
+  /** Tier index. tier 0 = the free default basket (no bonus, owned by all). */
+  tier: z.number().int(),
+  /** Milliseconds added to the coupon round duration while this tier is active. */
+  durationBonusMs: z.number().int(),
+  /** Coin price of this tier. */
+  priceCoins: z.number().int(),
+  /** Telegram Stars price of this tier (reserved; purchase phase 4). */
+  priceStars: z.number().int(),
+});
+
+export type BasketTierConfig = z.infer<typeof BasketTierConfigSchema>;
+
+/**
+ * Shop — cosmetic lemur skin (spec/app/13). Pure cosmetics: one is equipped,
+ * none affect the economy. Carries both prices (coins now; Stars phase 4).
+ */
+export const SkinConfigSchema = z.object({
+  /** Stable skin id ('classic' | 'dealer' | ...). */
+  id: z.string(),
+  /** Display name (ru). */
+  name: z.string(),
+  /** Coin price of this skin (0 = free / default). */
+  priceCoins: z.number().int(),
+  /** Telegram Stars price of this skin (reserved; purchase phase 4). */
+  priceStars: z.number().int(),
+});
+
+export type SkinConfig = z.infer<typeof SkinConfigSchema>;
+
+/**
  * Build a `z.object` whose keys are the given const-array members, each mapped
  * to `value`. Produces a fully-keyed record schema (no extra/missing keys).
  */
@@ -113,13 +148,15 @@ export const GameConfigSchema = z.object({
 
   // ── Coupon boost consumable (spec/app/06 §"Буст") ─────────────────────
   /**
-   * Coin price of the coupon boost. Tuned to roughly one round's TYPICAL payout
-   * (~70–100 coins), NOT couponMaxCoins (3000) — that cap is anti-fraud, not the
-   * expected reward. Buying it refills energy for one attempt.
+   * Coin price of the coupon boost. Tuned to roughly half a round's TYPICAL
+   * payout (~70–100 coins), NOT couponMaxCoins (3000) — that cap is anti-fraud,
+   * not the expected reward. Buying it refills energy for one attempt.
    */
   couponBoostPrice: z.number(),
   /** Energy granted on purchase (= one round's cost; tops the bar to full). */
   couponBoostEnergyGrant: z.number(),
+  /** Max coupon-boost purchases per user per UTC day (anti-abuse coin sink cap). */
+  couponBoostDailyCap: z.number(),
 
   // ── Daily bonus (spec/app/07) ─────────────────────────────────────────
   /**
@@ -133,6 +170,12 @@ export const GameConfigSchema = z.object({
   staking: recordOf(STAKING_TIERS, StakingTierConfigSchema),
   // Per-position boosts shop (spec/app/08 §5). Keyed by StakingBoost.
   stakingBoosts: recordOf(STAKING_BOOSTS, StakingBoostConfigSchema),
+
+  // ── Shop (spec/app/13) ────────────────────────────────────────────────
+  /** Basket tiers (longer coupon round); best owned tier is active. */
+  baskets: z.array(BasketTierConfigSchema),
+  /** Cosmetic lemur skins (one equipped; no economy effect). */
+  skins: z.array(SkinConfigSchema),
 
   // ── Referral (spec/app/09, 11) ────────────────────────────────────────
   /** One-off join bonus to the referrer (refSource='join'). */
@@ -176,7 +219,7 @@ export type GameConfig = z.infer<typeof GameConfigSchema>;
  * Numbers mirror spec/app/04 exactly; caps/limits from 05/06/07/08/09/11.
  */
 export const DEFAULT_GAME_CONFIG: GameConfig = GameConfigSchema.parse({
-  version: 6,
+  version: 11,
 
   // Base economy (spec/app/04). Energy now gates ONLY the coupon round, so the
   // bar IS the round cooldown: max == cost (bar holds exactly one round) and a
@@ -215,11 +258,14 @@ export const DEFAULT_GAME_CONFIG: GameConfig = GameConfigSchema.parse({
   couponRateLimitWindowMs: 10_000,
   couponRateLimitMax: 5,
 
-  // Coupon boost consumable (spec/app/06 §"Буст"). Price ≈ one round's typical
+  // Coupon boost consumable (spec/app/06 §"Буст"). Price ≈ half a round's typical
   // payout (~70–100 coins), NOT the couponMaxCoins anti-fraud cap. The grant
   // equals couponSessionCost so it tops a drained bar back to one playable round.
-  couponBoostPrice: 100,
+  couponBoostPrice: 50,
   couponBoostEnergyGrant: 500,
+  // Cap purchases at 50/UTC-day per user: bounds the energy a player can buy
+  // past the natural one-round-per-hour regen gate (spec/app/06, 11).
+  couponBoostDailyCap: 50,
 
   // Daily bonus (spec/app/07): day 1..7+ (reward table /50 vs прежних значений).
   dailyRewards: [10, 15, 20, 30, 40, 60, 100],
@@ -242,6 +288,29 @@ export const DEFAULT_GAME_CONFIG: GameConfig = GameConfigSchema.parse({
     capacity: { base: 4000, mult: 1.8, perLevel: 0.5, maxLevel: 5 },
     unfreeze: { base: 6000, mult: 2.2, perLevel: 0.5, maxLevel: 2 },
   },
+
+  // Shop (spec/app/13). Baskets are a 6-step carrier ladder (kraft → canvas →
+  // leather → bronze → silver → gold). tier 0 «Картонная» is the FREE default
+  // everyone ships with (no bonus, price 0, always owned) — mirroring the free
+  // default skin. Paid tiers 1-5 lengthen the coupon round (up to +12s → 42s at
+  // the top); prices grow ~2.2x geometrically. Best owned tier is active. Both
+  // currencies purchasable (coins now, Stars in Telegram).
+  baskets: [
+    { tier: 0, durationBonusMs: 0, priceCoins: 0, priceStars: 0 },
+    { tier: 1, durationBonusMs: 4_000, priceCoins: 120000, priceStars: 1400 },
+    { tier: 2, durationBonusMs: 6_000, priceCoins: 280000, priceStars: 2800 },
+    { tier: 3, durationBonusMs: 8_000, priceCoins: 640000, priceStars: 5600 },
+    { tier: 4, durationBonusMs: 10_000, priceCoins: 1400000, priceStars: 9600 },
+    { tier: 5, durationBonusMs: 12_000, priceCoins: 3000000, priceStars: 16000 },
+  ],
+  skins: [
+    { id: 'classic', name: 'Купец', priceCoins: 0, priceStars: 0 },
+    { id: 'dealer', name: 'Делец', priceCoins: 200000, priceStars: 2000 },
+    { id: 'broker', name: 'Воротила', priceCoins: 400000, priceStars: 3000 },
+    { id: 'magnate', name: 'Магнат', priceCoins: 600000, priceStars: 5000 },
+    { id: 'oligarch', name: 'Олигарх', priceCoins: 900000, priceStars: 7000 },
+    { id: 'patron', name: 'Меценат', priceCoins: 1500000, priceStars: 10000 },
+  ],
 
   // Referral (spec/app/09, 11)
   referralJoinBonusReferrer: 5000,
