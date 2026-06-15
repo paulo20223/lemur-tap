@@ -1,0 +1,67 @@
+name: Deploy to Production
+
+# Auto-deploy on every push to main. Runs on the self-hosted runner that lives
+# on the production box (62.84.188.139), where the stack is checked out at
+# /opt/lemur-tap and started via compose.prod.yml.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Never run two deploys at once; let an in-flight deploy finish.
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, lemur-tap]
+    steps:
+      - name: Sync working tree to origin/main
+        run: |
+          set -euo pipefail
+          cd /opt/lemur-tap
+          git fetch --prune origin main
+          git reset --hard origin/main
+
+      - name: Build images
+        run: |
+          set -euo pipefail
+          cd /opt/lemur-tap
+          docker compose -f compose.prod.yml build
+
+      - name: Migrate + seed database
+        run: |
+          set -euo pipefail
+          cd /opt/lemur-tap
+          docker compose -f compose.prod.yml up -d postgres redis
+          # One-off containers wait for postgres healthy (depends_on condition).
+          docker compose -f compose.prod.yml run --rm api node node_modules/prisma/build/index.js migrate deploy
+          docker compose -f compose.prod.yml run --rm api node node_modules/prisma/build/index.js db seed
+
+      - name: Start / refresh services
+        run: |
+          set -euo pipefail
+          cd /opt/lemur-tap
+          docker compose -f compose.prod.yml up -d --remove-orphans
+
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          cd /opt/lemur-tap
+          # Give the API a moment to finish booting, then check the proxy path.
+          for i in $(seq 1 20); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' \
+              -X POST http://127.0.0.1:8090/api/v1/rpc/auth/telegram \
+              -H 'Content-Type: application/json' -d '{"json":{"initData":""}}' || true)
+            # 401 = oRPC reachable and rejecting empty initData (expected healthy state).
+            if [ "$code" = "401" ]; then echo "API healthy (got $code)"; exit 0; fi
+            echo "waiting for API... ($i, last=$code)"; sleep 3
+          done
+          echo "API did not become healthy" >&2
+          docker compose -f compose.prod.yml logs --tail 50 api >&2
+          exit 1
+
+      - name: Prune dangling images
+        if: always()
+        run: docker image prune -f

@@ -1,0 +1,14 @@
+# Keep the Docker build context small and deterministic — deps and build
+# artifacts are recreated inside the image, never copied from the host.
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+.git
+.history
+.agents
+*.log
+.env
+.env.*
+.DS_Store
+**/.DS_Store
+coverage

@@ -23,5 +23,8 @@
   "dependencies": {
     "@orpc/contract": "^1.14",
     "zod": "^4"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
   }
 }

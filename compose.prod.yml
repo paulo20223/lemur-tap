@@ -1,0 +1,80 @@
+# Production stack for Lemur Tap (deployed at /opt/lemur-tap on the host).
+#
+# Topology (matches the box convention):
+#   - postgres + redis: internal only, persisted via named volumes.
+#   - api: NestJS + grammY bot (long-polling), reachable in-network as api:3000.
+#   - web: nginx serving the built SPA and proxying /api/* -> api:3000.
+#          Joined to the external `nginx-proxy` network so the Cloudflare Tunnel
+#          front (nginx-proxy) can route ${VIRTUAL_HOST} to it over HTTPS.
+#
+# Secrets / bot config come from ./.env (VITE_* and NGROK_* there are ignored by
+# the runtime). DATABASE_URL / REDIS_URL are overridden below to the in-network
+# service names regardless of what .env contains.
+name: lemur-tap
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lemur
+      POSTGRES_PASSWORD: lemur
+      POSTGRES_DB: lemur_tap
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U lemur -d lemur_tap']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redisdata:/data
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    env_file: [.env]
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      # In-network infra — overrides whatever .env carries for local dev.
+      DATABASE_URL: postgresql://lemur:lemur@postgres:5432/lemur_tap?schema=public
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/webapp/Dockerfile
+    restart: unless-stopped
+    environment:
+      # Consumed by nginx-proxy (docker-gen) to build the public vhost.
+      VIRTUAL_HOST: ${VIRTUAL_HOST:-}
+      VIRTUAL_PORT: '80'
+    expose: ['80']
+    # Local-only publish for on-host verification (curl 127.0.0.1:8090).
+    ports:
+      - '127.0.0.1:8090:80'
+    depends_on:
+      - api
+    networks: [default, nginx-proxy]
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  # Provided by /opt/nginx (Cloudflare Tunnel -> nginx-proxy -> this web).
+  nginx-proxy:
+    external: true

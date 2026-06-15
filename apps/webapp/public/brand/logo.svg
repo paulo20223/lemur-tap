@@ -1,0 +1,95 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="0.32" cy="0.26" r="0.95">
+      <stop offset="0" stop-color="#ffb35c"/>
+      <stop offset="0.5" stop-color="#ff7a1a"/>
+      <stop offset="1" stop-color="#ef5a00"/>
+    </radialGradient>
+    <linearGradient id="fur" x1="160" y1="90" x2="360" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#efeae3"/>
+      <stop offset="1" stop-color="#cabfb2"/>
+    </linearGradient>
+    <linearGradient id="coin" x1="250" y1="320" x2="410" y2="450" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffe49b"/>
+      <stop offset="0.5" stop-color="#ffb020"/>
+      <stop offset="1" stop-color="#e8860a"/>
+    </linearGradient>
+    <radialGradient id="coinHi" cx="0.36" cy="0.3" r="0.6">
+      <stop offset="0" stop-color="#fff6df" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#fff6df" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="eye" cx="0.4" cy="0.35" r="0.7">
+      <stop offset="0" stop-color="#ffd97a"/>
+      <stop offset="0.55" stop-color="#ffab1f"/>
+      <stop offset="1" stop-color="#d9760a"/>
+    </radialGradient>
+  </defs>
+
+  <!-- background -->
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="150" cy="120" r="180" fill="#ffffff" opacity="0.10"/>
+
+  <!-- ringed tail, curling up behind on the right (lemur signature) -->
+  <g transform="translate(0,4)">
+    <path d="M352 360 C 432 360 452 268 410 214 C 384 180 336 176 318 206"
+          fill="none" stroke="#f3ede5" stroke-width="44" stroke-linecap="round"/>
+    <path d="M352 360 C 432 360 452 268 410 214 C 384 180 336 176 318 206"
+          fill="none" stroke="#2c2520" stroke-width="46" stroke-linecap="butt"
+          stroke-dasharray="22 30"/>
+  </g>
+
+  <!-- ears -->
+  <g>
+    <circle cx="158" cy="150" r="50" fill="url(#fur)"/>
+    <circle cx="354" cy="150" r="50" fill="url(#fur)"/>
+    <circle cx="158" cy="150" r="26" fill="#2c2520" opacity="0.9"/>
+    <circle cx="354" cy="150" r="26" fill="#2c2520" opacity="0.9"/>
+  </g>
+
+  <!-- head -->
+  <ellipse cx="256" cy="232" rx="152" ry="150" fill="url(#fur)"/>
+  <!-- grey crown (soft shading, blends into face) -->
+  <path d="M118 200 C 150 104 362 104 394 200 C 360 168 152 168 118 200 Z" fill="#b9ad9e" opacity="0.32"/>
+
+  <!-- white lower face -->
+  <path d="M256 150 C 196 150 168 220 176 270 C 184 322 224 356 256 356 C 288 356 328 322 336 270 C 344 220 316 150 256 150 Z"
+        fill="#fdfbf7"/>
+
+  <!-- black eye masks -->
+  <ellipse cx="206" cy="236" rx="52" ry="60" fill="#2c2520"/>
+  <ellipse cx="306" cy="236" rx="52" ry="60" fill="#2c2520"/>
+
+  <!-- amber eyes -->
+  <circle cx="206" cy="240" r="34" fill="url(#eye)"/>
+  <circle cx="306" cy="240" r="34" fill="url(#eye)"/>
+  <circle cx="206" cy="240" r="15" fill="#231c17"/>
+  <circle cx="306" cy="240" r="15" fill="#231c17"/>
+  <circle cx="214" cy="231" r="6.5" fill="#fff" opacity="0.95"/>
+  <circle cx="314" cy="231" r="6.5" fill="#fff" opacity="0.95"/>
+
+  <!-- muzzle -->
+  <path d="M256 286 C 232 286 224 304 232 320 C 240 336 272 336 280 320 C 288 304 280 286 256 286 Z" fill="#f0eae1"/>
+  <ellipse cx="256" cy="300" rx="15" ry="11" fill="#2c2520"/>
+  <path d="M256 311 V 326" stroke="#2c2520" stroke-width="5" stroke-linecap="round"/>
+  <path d="M256 326 q -12 8 -22 2 M256 326 q 12 8 22 2" stroke="#2c2520" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+  <!-- gold coin being caught -->
+  <g>
+    <circle cx="356" cy="402" r="74" fill="url(#coin)"/>
+    <circle cx="356" cy="402" r="74" fill="url(#coinHi)"/>
+    <circle cx="356" cy="402" r="55" fill="none" stroke="#d9760a" stroke-opacity="0.55" stroke-width="6"/>
+    <path d="M356 372 v60 M342 384 h22 a12 12 0 0 1 0 24 h-22 M342 396 h20"
+          fill="none" stroke="#b96a06" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- paw reaching the coin -->
+  <g>
+    <path d="M286 344 C 300 366 318 380 334 386" fill="none" stroke="url(#fur)" stroke-width="30" stroke-linecap="round"/>
+    <circle cx="338" cy="388" r="20" fill="url(#fur)"/>
+    <path d="M330 380 v8 M338 379 v10 M346 381 v8" stroke="#b9ad9e" stroke-width="3.5" stroke-linecap="round" opacity="0.7"/>
+  </g>
+
+  <!-- sparkles -->
+  <path d="M120 320 l6 16 16 6 -16 6 -6 16 -6 -16 -16 -6 16 -6 Z" fill="#fff" opacity="0.85"/>
+  <circle cx="418" cy="318" r="7" fill="#fff" opacity="0.7"/>
+</svg>

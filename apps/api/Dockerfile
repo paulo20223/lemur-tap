@@ -31,6 +31,7 @@ COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=build /app/packages/shared/dist packages/shared/dist
 COPY --from=build /app/packages/shared/package.json packages/shared/package.json
+COPY --from=build /app/packages/shared/node_modules packages/shared/node_modules
 COPY --from=build /app/apps/api/dist apps/api/dist
 COPY --from=build /app/apps/api/package.json apps/api/package.json
 COPY --from=build /app/apps/api/prisma apps/api/prisma
@@ -38,5 +39,6 @@ COPY --from=build /app/apps/api/node_modules apps/api/node_modules
 
 WORKDIR /app/apps/api
 EXPOSE 3000
-# Apply pending migrations then start.
-CMD ["sh", "-c", "node ../../node_modules/prisma/build/index.js migrate deploy && node dist/main.js"]
+# Apply pending migrations then start. prisma resolves from apps/api/node_modules
+# (pnpm keeps the package's devDeps local to the package).
+CMD ["sh", "-c", "node node_modules/prisma/build/index.js migrate deploy && node dist/main.js"]

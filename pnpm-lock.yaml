@@ -144,6 +144,10 @@ importers:
       zod:
         specifier: ^4
         version: 4.4.3
+    devDependencies:
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.3
 
 packages:
 
