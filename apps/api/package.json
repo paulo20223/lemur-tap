@@ -15,7 +15,9 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "prisma db seed",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "backfill:referral-rollback-v12": "node --env-file-if-exists=../../.env --import tsx scripts/backfill-referral-rollback-v12.ts",
+    "backfill:referral-rollback-v12:dry": "DRY_RUN=1 node --env-file-if-exists=../../.env --import tsx scripts/backfill-referral-rollback-v12.ts"
   },
   "prisma": {
     "seed": "node --import tsx prisma/seed.ts"
