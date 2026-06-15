@@ -219,7 +219,7 @@ export type GameConfig = z.infer<typeof GameConfigSchema>;
  * Numbers mirror spec/app/04 exactly; caps/limits from 05/06/07/08/09/11.
  */
 export const DEFAULT_GAME_CONFIG: GameConfig = GameConfigSchema.parse({
-  version: 11,
+  version: 12,
 
   // Base economy (spec/app/04). Energy now gates ONLY the coupon round, so the
   // bar IS the round cooldown: max == cost (bar holds exactly one round) and a
@@ -313,11 +313,11 @@ export const DEFAULT_GAME_CONFIG: GameConfig = GameConfigSchema.parse({
   ],
 
   // Referral (spec/app/09, 11)
-  referralJoinBonusReferrer: 5000,
-  referralJoinBonusReferee: 2000,
-  referralPremiumBonusReferrer: 25000,
-  referralPremiumBonusReferee: 2000,
-  referralPassiveRate: 0.1,
+  referralJoinBonusReferrer: 75,
+  referralJoinBonusReferee: 50,
+  referralPremiumBonusReferrer: 150,
+  referralPremiumBonusReferee: 150,
+  referralPassiveRate: 0,
   referralPassiveCap: 1_000_000,
   referralMinActivityTaps: 100,
   referralDailyCap: 50,
