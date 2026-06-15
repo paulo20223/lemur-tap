@@ -1,0 +1,347 @@
+/* Daily bonus screen — premium treasure-vault take on the shared white-orange
+   theme (src/styles.css). Designed as a fixed full-height column that fits
+   above the floating nav with no screen scroll. */
+
+.daily {
+  /* Fill the Rewards body exactly so nothing overflows the viewport above the
+     nav. The hero flexes to absorb the slack. */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Local treasure accents, derived from the global --gold so they track theme. */
+.daily {
+  --gold-soft: color-mix(in srgb, var(--gold) 20%, var(--card));
+  --gold-deep: color-mix(in srgb, var(--gold) 62%, var(--text));
+  --gold-line: color-mix(in srgb, var(--gold) 70%, #f59e0b);
+}
+
+/* ── Streak chip (crowns the panel, centered) ────────────────────────────── */
+
+.daily__streak {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border-radius: var(--radius-pill);
+  background: var(--gold-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 38%, transparent),
+    var(--inset-gloss);
+  font-size: 13px;
+  color: var(--gold-deep);
+  white-space: nowrap;
+}
+
+.daily__streak-flame {
+  color: var(--accent-strong);
+  flex: none;
+}
+
+.daily__streak-count {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--gold-deep);
+}
+
+.daily__streak-label {
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+/* ── Hero (today's reward + claim) ───────────────────────────────────────── */
+
+.daily__hero {
+  position: relative;
+  /* Float as a compact card, centered in the free space between the header
+     and the rail (which the column's auto margins distribute). */
+  margin-block: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 20px 22px;
+  overflow: hidden;
+  text-align: center;
+  background:
+    radial-gradient(
+      130% 78% at 50% -2%,
+      var(--accent-soft) 0%,
+      transparent 58%
+    ),
+    linear-gradient(168deg, #ffffff 0%, var(--card-sunken) 100%);
+}
+
+.daily__medallion {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 4px;
+  border-radius: var(--radius-pill);
+  color: var(--accent-text);
+  background: var(--accent-grad);
+  /* A single lit orb, not a clay button: top gloss + a darkened inner floor
+     make it read as a dome, one crisp gold ring frames it, and a soft warm
+     drop lifts it. No hard `--shadow-raised` ledge — that solid offset edge is
+     built for rectangular buttons and only smears a dirty crescent on a circle. */
+  box-shadow: inset 0 3px 5px rgba(255, 255, 255, 0.6),
+    inset 0 -8px 14px rgba(166, 58, 0, 0.4),
+    0 0 0 4px color-mix(in srgb, var(--gold) 24%, transparent),
+    0 12px 22px -8px rgba(241, 94, 0, 0.5);
+}
+
+/* Soft glow pooled directly behind the medallion. */
+.daily__medallion::before {
+  content: '';
+  position: absolute;
+  inset: -34px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--gold) 48%, transparent) 0%,
+    color-mix(in srgb, var(--accent) 24%, transparent) 42%,
+    transparent 72%
+  );
+  filter: blur(13px);
+}
+
+.daily__hero-label {
+  position: relative;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.daily__hero-amount {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.daily__coin {
+  flex: none;
+  filter: drop-shadow(0 2px 3px rgba(232, 134, 10, 0.35));
+}
+
+.daily__claim {
+  position: relative;
+  margin-top: 2px;
+  max-width: 320px;
+  overflow: hidden;
+}
+
+/* Light sweep across the live claim button — pure transform, composited. */
+.daily__claim:not(:disabled)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.5) 48%,
+    transparent 66%
+  );
+  transform: translateX(-120%);
+  animation: daily-shine 3.4s ease-in-out 1s infinite;
+  pointer-events: none;
+}
+
+@keyframes daily-shine {
+  0% {
+    transform: translateX(-120%);
+  }
+  /* The sweep is a brief glint, then a long rest before the next pass. */
+  22%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.daily__countdown {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.daily__countdown svg {
+  flex: none;
+}
+
+.daily__error {
+  color: var(--danger);
+  font-size: 14px;
+  margin: 0;
+}
+
+.daily__error--inline {
+  position: relative;
+  margin-top: 2px;
+}
+
+.daily__note {
+  position: relative;
+  margin: 4px 0 0;
+  max-width: 260px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-dim);
+  text-wrap: pretty;
+}
+
+/* ── 7-day streak rail ───────────────────────────────────────────────────── */
+
+.daily__rail {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  align-items: start;
+  padding: 4px 2px 2px;
+}
+
+/* Connecting line, drawn center-to-center across the 7 nodes.
+   Inset = half a column ((0.5 / 7) * 100%) on each side so it starts at the
+   first node's center and ends at the last. */
+.daily__line {
+  position: absolute;
+  top: 20px;
+  left: 7.142%;
+  right: 7.142%;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--text-dim) 22%, transparent);
+  overflow: hidden;
+}
+
+.daily__line-fill {
+  height: 100%;
+  width: calc(var(--progress, 0) * 100%);
+  border-radius: var(--radius-pill);
+  background: var(--gold-grad);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--gold) 55%, transparent);
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.daily__node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.daily__dot {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--text-dim);
+  box-shadow: inset 0 0 0 2px var(--card-sunken),
+    0 2px 5px rgba(43, 31, 24, 0.07);
+}
+
+.daily__node-reward {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.daily__node-day {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-dim);
+}
+
+/* Collected days — gold check, treasure already banked. */
+.daily__node--done .daily__dot {
+  background: var(--gold-grad);
+  color: #fff;
+  box-shadow: var(--inset-gloss),
+    0 3px 8px color-mix(in srgb, var(--gold) 45%, transparent);
+}
+
+/* Today's claimable day — accent, lifted, with a breathing glow ring. */
+.daily__node--today .daily__dot {
+  background: var(--accent-grad);
+  color: var(--accent-text);
+  box-shadow: var(--inset-gloss),
+    0 4px 10px color-mix(in srgb, var(--accent-strong) 50%, transparent);
+  animation: daily-pulse 2.2s ease-in-out infinite;
+}
+
+.daily__node--today .daily__node-reward {
+  color: var(--accent-strong);
+}
+
+.daily__node--today .daily__node-day {
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
+@keyframes daily-pulse {
+  0%,
+  100% {
+    box-shadow: var(--inset-gloss),
+      0 4px 10px color-mix(in srgb, var(--accent-strong) 50%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  50% {
+    box-shadow: var(--inset-gloss),
+      0 4px 10px color-mix(in srgb, var(--accent-strong) 50%, transparent),
+      0 0 0 6px color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+}
+
+/* Locked future days — muted. */
+.daily__node--locked .daily__dot {
+  background: var(--card-sunken);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  color: color-mix(in srgb, var(--text-dim) 70%, transparent);
+}
+
+.daily__node--locked .daily__node-reward {
+  color: var(--text-dim);
+}
+
+/* ── Loading / error states ──────────────────────────────────────────────── */
+
+.daily__center {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .daily__claim:not(:disabled)::after,
+  .daily__node--today .daily__dot {
+    animation: none;
+  }
+  .daily__line-fill {
+    transition: none;
+  }
+}

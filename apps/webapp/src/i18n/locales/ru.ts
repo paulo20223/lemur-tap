@@ -1,0 +1,273 @@
+/**
+ * Russian dictionary — the single source of truth for the UI string shape.
+ *
+ * `DotPaths<typeof ru>` derives the type-safe key union; `en.ts` mirrors this
+ * structure (enforced by the compiler via `Translations<typeof ru>`). Keep
+ * namespaces aligned with screens. Plural leaves provide one/few/many (+ other
+ * for fractional/edge cases). Placeholders use `{name}`; `{count}` also drives
+ * plural selection.
+ *
+ * Game terminology follows the spec glossary (монеты, энергия, купоны, стейкинг).
+ */
+export const ru = {
+  common: {
+    retry: 'Повторить',
+    tryAgain: 'Попробовать снова',
+    loading: 'Загрузка…',
+    loadingMore: 'Загрузка…',
+    somethingWrong: 'Что-то пошло не так.',
+    unknownError: 'Неизвестная ошибка',
+  },
+
+  nav: {
+    play: 'Игра',
+    rewards: 'Награды',
+    ranks: 'Рейтинг',
+    stake: 'Стейкинг',
+    profile: 'Профиль',
+  },
+
+  boot: {
+    title: 'Lemur Tap',
+    cantStart: 'Не удалось запустить',
+  },
+
+  errorBoundary: {
+    title: 'Что-то пошло не так',
+    tryAgain: 'Попробовать снова',
+  },
+
+  coupon: {
+    title: 'Лови купоны!',
+    description:
+      'Перетаскивай корзину лемура и лови падающие купоны брендов {seconds} секунд. Редкие бренды дают больше очков.',
+    score: 'Очки',
+    time: 'Время',
+    seconds: '{value} с',
+    energy: 'Энергия',
+    starting: 'Запуск…',
+    play: 'Играть · {cost} энергии',
+    playAgain: 'Ещё раз · {cost} энергии',
+    outOfEnergy: 'Нет энергии',
+    needEnergy: 'Нужно {cost} энергии (есть {have}).',
+    rechargeHint: 'Восстанови энергию до {cost}, чтобы сыграть снова.',
+    loadingConfig: 'Загрузка конфигурации…',
+    go: 'СТАРТ',
+    tallying: 'Считаем улов…',
+    reward: 'Награда',
+    finalScore: 'Итоговый счёт: {score}',
+    errors: {
+      insufficientEnergy: 'Недостаточно энергии для раунда.',
+      sessionActive: 'У тебя уже идёт раунд.',
+      rateLimited: 'Слишком быстро — подожди немного и попробуй снова.',
+      sessionRejected: 'Раунд отклонён. В этот раз без награды.',
+      sessionExpired: 'Раунд истёк до отправки результата.',
+      sessionNotFound: 'Сессия раунда не найдена.',
+      generic: 'Что-то пошло не так. Попробуй снова.',
+    },
+  },
+
+  rewards: {
+    daily: 'Бонус',
+    boosts: 'Бусты',
+    sectionLabel: 'Раздел наград',
+    yourCoins: 'Твои монеты',
+  },
+
+  daily: {
+    streakLabel: {
+      one: 'день подряд',
+      few: 'дня подряд',
+      many: 'дней подряд',
+      other: 'дней подряд',
+    },
+    currentStreak: 'Текущая серия',
+    todayReward: 'Награда сегодня',
+    nextReward: 'Следующая награда',
+    claiming: 'Получаем…',
+    claim: 'Забрать {amount}',
+    claimedToday: 'Сегодня получено',
+    nextClaimIn: 'Следующая через {time}',
+    note: 'Не теряй серию. Пропустишь день — она сбросится на День 1.',
+    day: 'День {label}',
+    failedLoad: 'Не удалось загрузить ежедневный бонус',
+    claimFailed: 'Не удалось забрать, попробуй снова',
+  },
+
+  upgrades: {
+    branches: {
+      maxEnergy: {
+        title: 'Макс. энергия',
+        blurb: 'Размер шкалы энергии',
+        effect: '{value} макс.',
+      },
+      energyRegen: {
+        title: 'Восстановление',
+        blurb: 'Энергия в секунду',
+        effect: '{value} / сек',
+      },
+      couponMult: {
+        title: 'Множитель купонов',
+        blurb: 'Бонус к наградам в мини-игре',
+        effect: '×{value}',
+      },
+      vault: {
+        title: 'Объём хранилища',
+        blurb: 'Дневной офлайн-доход в банке',
+        effect: '{value} / день',
+      },
+    },
+    level: 'Ур. {level}',
+    max: 'MAX',
+    maxed: 'Максимум',
+    buying: 'Покупка…',
+    notEnoughCoins: 'Не хватает монет',
+    empty: 'Нет доступных улучшений.',
+    failedLoad: 'Не удалось загрузить улучшения. Попробуй снова.',
+    purchaseFailed: 'Покупка не удалась. Попробуй снова.',
+    boost: {
+      title: 'Купон-буст',
+      blurb: 'Долить энергию на одну попытку',
+      effect: '+{energy} энергии',
+      buy: 'Купить буст',
+      buying: 'Покупка…',
+    },
+  },
+
+  staking: {
+    title: 'Стейкинг',
+    tiers: {
+      flex: 'Гибкий',
+      lock: 'Фикс',
+    },
+    perDay: '/день',
+    noLock: 'Без блокировки',
+    lockTerm: 'блок {days} дн.',
+    min: 'мин. {amount}',
+    availableBalance: 'Доступный баланс',
+    staked: 'В стейкинге',
+    yieldPerDay: 'Доход / день',
+    chooseTier: 'Выбери тариф',
+    amountAriaLabel: 'Сумма для стейкинга',
+    amountPlaceholder: 'Сумма',
+    minPlaceholder: 'мин. {amount}',
+    formMeta: 'Мин. {amount} · {rate}/день',
+    positions: '{active}/{total} позиций',
+    stakingInProgress: 'Стейкинг…',
+    topUp: 'Пополнить {tier}',
+    stake: 'Внести {tier}',
+    activePositions: 'Активные позиции',
+    noPositions:
+      'Пока нет активных позиций. Внеси монеты, чтобы копить пассивный доход, пока тебя нет.',
+    principal: 'Тело',
+    storage: 'Хранилище',
+    storageFillAria: 'Заполнение хранилища',
+    full: 'полно',
+    locked: 'заблокировано',
+    flexible: 'гибкая',
+    claim: 'Забрать {amount}',
+    working: 'Обработка…',
+    unstake: 'Вывести',
+    earlyExitHint: 'Досрочный выход теряет хранилище + штраф',
+    positionBoosts: 'Бусты позиции',
+    noBonus: 'нет бонуса',
+    boostEffect: '{sign}{pct}% {noun}',
+    boostMeta: {
+      rate: { label: 'Ускоритель', noun: 'доходность' },
+      capacity: { label: 'Расширение', noun: 'хранилище' },
+      unfreeze: { label: 'Разморозка', noun: 'штраф' },
+    },
+    boostLevelUp: '{label}: уровень повышен.',
+    unlocked: 'разблокировано',
+    confirmUnstake:
+      'Позиция ещё заблокирована. Досрочный вывод сжигает накопленное хранилище и стоит штраф {penalty} от тела. Продолжить?',
+    toastStaked: 'Внесено {amount} в {tier}.',
+    toastToppedUp: 'Пополнено {amount} в {tier}.',
+    toastClaimed: 'Получено {amount} монет.',
+    toastNothingToClaim: 'Пока нечего забирать.',
+    toastReturned: 'Возвращено {amount} монет',
+    toastYield: '+{amount} доход',
+    toastPenalty: '(штраф за досрочный выход)',
+    errors: {
+      stakeLocked: 'Позиция ещё заблокирована.',
+      stakeNotFound: 'Позиция не найдена.',
+      insufficientCoins: 'Не хватает монет.',
+      amountBelowMin: 'Ниже минимума тарифа.',
+      unknownTier: 'Неизвестный тариф.',
+      unknownBoost: 'Неизвестный буст.',
+      maxLevel: 'Буст уже на максимуме.',
+      loadingConfig: 'Загрузка конфигурации…',
+      enterAmount: 'Введи сумму.',
+      amountPositive: 'Сумма должна быть положительной.',
+      minimumFor: 'Минимум для {tier} — {amount}.',
+      notEnoughCoins: 'Не хватает монет.',
+    },
+  },
+
+  leaderboard: {
+    title: 'Рейтинг',
+    rankedByCoins: 'Сортировка по монетам',
+    players: {
+      one: 'игрок',
+      few: 'игрока',
+      many: 'игроков',
+      other: 'игроков',
+    },
+    player: 'Игрок',
+    coins: 'Монеты',
+    you: 'Вы',
+    yourPosition: 'Ваша позиция',
+    noRanks: 'Пока нет рейтинга',
+    noRanksHint: 'Лови купоны и копи монеты. Первый, кто поднимется, задаст планку.',
+    failedLoad: 'Не удалось загрузить рейтинг',
+  },
+
+  referral: {
+    shareText: 'Заходи в Lemur Tap и забери приветственный бонус!',
+    program: 'Реферальная программа',
+    leadPrefix: 'Получай',
+    leadAccent: '10%',
+    leadSuffix: 'с каждого друга. Навсегда.',
+    sub: 'Они приходят с приветственным бонусом, а каждая монета, что они ловят, приносит доход тебе.',
+    yourCode: 'Твой код',
+    inviteLink: 'Ссылка-приглашение',
+    copy: 'Копировать',
+    copied: 'Скопировано',
+    copyAria: 'Скопировать ссылку',
+    copiedAria: 'Ссылка скопирована',
+    shareInvite: 'Поделиться приглашением',
+    totalEarned: 'Всего заработано',
+    ledgerJoin: 'Вступление',
+    ledgerPremium: 'Premium',
+    ledgerPassive: 'Пассивно 10%',
+    yourReferrals: 'Твои рефералы',
+    noReferrals: 'Пока нет рефералов',
+    noReferralsHint: 'Поделись ссылкой, чтобы зарабатывать вместе.',
+    inviteFriend: 'Пригласить друга',
+    premium: 'Premium',
+    loadMore: 'Показать ещё',
+    failedLoad: 'Не удалось загрузить рефералов',
+    failedLoadMore: 'Не удалось загрузить ещё',
+    lemurName: 'Лемур #{id}',
+  },
+
+  profile: {
+    title: 'Профиль',
+    sectionsLabel: 'Разделы профиля',
+    tabProfile: 'Профиль',
+    tabFriends: 'Друзья',
+    anonName: 'Лемур {id}',
+    telegramPremium: 'Telegram Premium',
+    memberSince: 'С нами с',
+    lemurId: 'ID лемура',
+    coinBalance: 'Баланс монет',
+    energy: 'Энергия',
+    regenerates: 'Восстановление +{rate} / сек',
+  },
+
+  language: {
+    label: 'Язык',
+    ru: 'Русский',
+    en: 'English',
+  },
+};

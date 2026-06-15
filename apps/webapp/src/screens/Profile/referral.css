@@ -1,0 +1,521 @@
+/* Friends (referral) panel — "quiet luxury" within the fixed warm theme.
+   Lives as one tab of the Profile page. The --ref-* palette tokens are defined
+   once on .profile-page (profile.css) and inherited here, so this tab shares an
+   identical surface language with the Profile tab. Builds on the shared
+   primitives in src/styles.css (.btn, .num): warm near-white sheets, generous
+   air, hairline structure, a single precise orange accent, gold reserved
+   strictly for the premium-member signal. */
+
+/* ── Sheet: the quiet replacement for .card ─────────────────────────────── */
+
+.ref-sheet {
+  position: relative;
+  background: var(--ref-surface);
+  border: 1px solid var(--ref-line);
+  border-radius: 22px;
+  box-shadow: var(--ref-shadow);
+  padding: 24px;
+  animation: ref-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ref-sheet:nth-of-type(2) {
+  animation-delay: 0.06s;
+}
+.ref-sheet:nth-of-type(3) {
+  animation-delay: 0.12s;
+}
+
+@keyframes ref-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 9px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Tracked small-caps eyebrow — the recurring "premium label" device. */
+.ref-eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ref-ink-faint);
+}
+
+/* ── Invite ─────────────────────────────────────────────────────────────── */
+
+.ref-invite {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: center;
+}
+
+.ref-invite__emblem {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 2px;
+  pointer-events: none;
+}
+
+.ref-lead {
+  margin: 0 auto;
+  /* Lead value prop: large, tight, one orange accent — no gradient text. */
+  font-size: 26px;
+  line-height: 1.18;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ref-ink);
+  max-width: 19ch;
+  text-wrap: balance;
+}
+
+.ref-lead__accent {
+  color: var(--ref-accent);
+}
+
+.ref-sub {
+  margin: -4px auto 2px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--ref-ink-soft);
+  max-width: 36ch;
+  text-wrap: pretty;
+}
+
+/* Invite code as an embossed membership credential — centred, symmetric. */
+.ref-cred {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--ref-sunken);
+  border: 1px solid var(--ref-line);
+  box-shadow: var(--ref-emboss);
+  text-align: center;
+}
+
+.ref-cred__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ref-ink-faint);
+}
+
+.ref-cred__value {
+  font-family:
+    ui-monospace, 'SF Mono', 'JetBrains Mono', 'Roboto Mono', Menlo, monospace;
+  font-size: 22px;
+  font-weight: 700;
+  /* Mono credential keeps a touch of tracking but indented so the centred
+     glyph run stays optically centred (trailing letter-spacing adds right pad). */
+  letter-spacing: 0.08em;
+  text-indent: 0.08em;
+  color: var(--ref-ink);
+  user-select: text;
+}
+
+/* Invite link field + copy control. */
+.ref-link {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.ref-link__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ref-ink-faint);
+  padding-left: 1px;
+}
+
+.ref-link__field {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.ref-link__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  appearance: none;
+  border: 1px solid var(--ref-line-strong);
+  border-radius: 12px;
+  background: var(--ref-surface);
+  color: var(--ref-ink-soft);
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 12px 14px;
+  text-overflow: ellipsis;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.ref-link__input:focus {
+  outline: none;
+  border-color: var(--ref-accent);
+  box-shadow: 0 0 0 3px var(--ref-accent-wash);
+}
+
+/* Secondary, restrained copy button (the loud .btn is reserved for share). */
+.ref-copy {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 16px;
+  appearance: none;
+  cursor: pointer;
+  border: 1px solid var(--ref-line-strong);
+  border-radius: 12px;
+  background: var(--ref-surface);
+  color: var(--ref-ink);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease,
+    transform 0.12s ease;
+}
+
+.ref-copy:active {
+  transform: translateY(1px);
+}
+
+.ref-copy[data-copied] {
+  border-color: var(--ref-gold-line);
+  color: var(--ref-gold-ink);
+}
+
+.ref-share {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+/* Icon sits out of flow so the label is optically centred in the button. */
+.ref-share svg {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Refined warm, translucent lift for the share / invite CTAs instead of the
+   global solid claymorphic ledge — fits the quiet-luxury surfaces around them.
+   Scoped under .profile-page to WIN the cascade over .btn: main.tsx imports
+   styles.css last, so an unscoped .ref-share rule (equal specificity) would
+   lose to the later .btn and the buttons would render with the solid shadow. */
+.profile-page .ref-share,
+.profile-page .ref-empty__cta {
+  box-shadow:
+    0 2px 6px -2px rgba(122, 74, 30, 0.1),
+    0 8px 18px -8px rgba(241, 94, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.profile-page .ref-share:active,
+.profile-page .ref-empty__cta:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 1px 3px rgba(122, 74, 30, 0.09),
+    0 4px 10px -6px rgba(241, 94, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+/* ── Earnings: one statement (lead total + hairline ledger) ─────────────── */
+
+.ref-earn {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ref-earn__total {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: -6px;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  color: var(--ref-ink);
+}
+
+.ref-earn__total svg {
+  flex: 0 0 auto;
+  filter: drop-shadow(0 3px 6px rgba(232, 134, 10, 0.12));
+}
+
+.ref-earn__ledger {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding-top: 16px;
+  border-top: 1px solid var(--ref-line);
+}
+
+.ref-ledger__item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0 14px;
+  text-align: center;
+}
+
+.ref-ledger__item + .ref-ledger__item {
+  border-left: 1px solid var(--ref-line);
+}
+
+.ref-ledger__value {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ref-ink);
+}
+
+.ref-ledger__label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ref-ink-faint);
+}
+
+/* ── Roster ─────────────────────────────────────────────────────────────── */
+
+.ref-list {
+  padding-top: 20px;
+}
+
+.ref-list__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.ref-list__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--ref-ink);
+}
+
+.ref-list__count {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ref-ink-soft);
+  background: var(--ref-sunken);
+  border: 1px solid var(--ref-line);
+  border-radius: 999px;
+  padding: 3px 12px;
+  min-width: 30px;
+  text-align: center;
+}
+
+.ref-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ref-row {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 0;
+  border-top: 1px solid var(--ref-line);
+}
+
+.ref-row:first-child {
+  border-top: none;
+}
+
+/* Per-referee monogram disc; premium gets a restrained gold ring. */
+.ref-row__avatar {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ref-ink-soft);
+  background: var(--ref-sunken);
+  border: 1px solid var(--ref-line-strong);
+  box-shadow: var(--ref-emboss);
+}
+
+.ref-row__avatar[data-premium] {
+  color: var(--ref-gold-ink);
+  border-color: var(--ref-gold-line);
+  background:
+    linear-gradient(160deg, rgba(255, 210, 122, 0.28), rgba(255, 176, 32, 0.12));
+}
+
+.ref-row__main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.ref-row__name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ref-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ref-row__date {
+  font-size: 12px;
+  color: var(--ref-ink-faint);
+}
+
+.ref-row__premium {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ref-gold-ink);
+  background: rgba(255, 176, 32, 0.12);
+  border: 1px solid var(--ref-gold-line);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.ref-list__more {
+  margin-top: 16px;
+}
+
+.ref-list__error {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+/* ── Empty state ────────────────────────────────────────────────────────── */
+
+.ref-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 22px 8px 6px;
+  text-align: center;
+}
+
+.ref-empty__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  color: var(--ref-ink-faint);
+  background: var(--ref-sunken);
+  border: 1px solid var(--ref-line);
+  box-shadow: var(--ref-emboss);
+  margin-bottom: 4px;
+}
+
+.ref-empty__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ref-ink);
+  text-wrap: balance;
+}
+
+.ref-empty__hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ref-ink-soft);
+  max-width: 240px;
+  text-wrap: pretty;
+}
+
+.ref-empty__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* ── Error / loading ────────────────────────────────────────────────────── */
+
+.ref-error {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.ref-error p {
+  margin: 0;
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.ref-skeleton {
+  border-radius: 22px;
+  height: 132px;
+  border: 1px solid var(--ref-line);
+  background: linear-gradient(
+    100deg,
+    var(--ref-surface) 30%,
+    var(--ref-sunken) 50%,
+    var(--ref-surface) 70%
+  );
+  background-size: 300% 100%;
+  animation: ref-shimmer 1.5s ease infinite;
+}
+
+.ref-skeleton--tall {
+  height: 268px;
+}
+
+.ref-skeleton--list {
+  height: 200px;
+}
+
+@keyframes ref-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ref-sheet,
+  .ref-skeleton {
+    animation: none;
+  }
+}

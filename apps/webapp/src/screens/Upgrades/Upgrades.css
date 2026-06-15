@@ -1,0 +1,201 @@
+/* Upgrades screen — fixed white-orange theme. Uses shared primitives
+   (.screen/.card/.btn/.num) plus claymorphic per-upgrade cards.
+   Mobile-first, single column. */
+
+.upgrades {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.upgrades__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+/* ── Error banner ──────────────────────────────────────────────────────── */
+
+.upgrades__error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: rgba(255, 77, 77, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(255, 77, 77, 0.28);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.upgrades__retry {
+  flex: 0 0 auto;
+  appearance: none;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: var(--danger);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.upgrades__center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.upgrades__empty {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+/* ── Upgrade card ──────────────────────────────────────────────────────── */
+
+.upg {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.upg__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.upg__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  box-shadow: var(--inset-gloss);
+}
+
+.upg__head {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.upg__title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.upg__blurb {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-wrap: pretty;
+}
+
+.upg__level {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+}
+
+.upg__lvl {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border-radius: var(--radius-pill);
+  padding: 5px 11px;
+}
+
+.upg__max {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--accent-text);
+  background: var(--gold-grad);
+  border-radius: var(--radius-pill);
+  padding: 5px 11px;
+  box-shadow: var(--inset-gloss);
+}
+
+/* ── Coupon boost card (a single consumable, accented apart from upgrades) ─ */
+
+.upg--boost {
+  border: 1px solid var(--accent-soft);
+  box-shadow: var(--shadow-card), inset 0 0 0 1px var(--accent-soft);
+}
+
+.upg__icon--boost {
+  background: var(--gold-grad);
+  color: var(--accent-text);
+}
+
+/* The boost effect line is a single value (no current→next), so center it. */
+.upg--boost .upg__effect-now {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* ── Effect row (current → next) ───────────────────────────────────────── */
+
+.upg__effect {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  background: var(--card-sunken);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.upg__effect-now {
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.upg__arrow {
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.upg__effect-next {
+  color: var(--ok);
+  font-weight: 800;
+}
+
+/* ── Buy button ────────────────────────────────────────────────────────── */
+
+.upg__buy {
+  width: 100%;
+}
+
+.upg__price {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.upg__coin {
+  flex: 0 0 auto;
+}
+
+.upg__hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 600;
+  margin-top: -2px;
+}

@@ -1,0 +1,106 @@
+/* SegmentedToggle — carved sunken track + one raised clay thumb that glides
+   between two segments. Shares the claymorphic recipe (orange clay, gold rim,
+   top gloss) with the bottom-nav indicator so the app's switchers read as one
+   family. Used by the Rewards and Profile pages. */
+
+.segtab {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, var(--card-sunken) 0%, #ffe9d6 100%);
+  box-shadow: inset 0 2px 5px rgba(43, 31, 24, 0.1),
+    inset 0 0 0 1px var(--hairline);
+}
+
+/* The sliding thumb: an outer positioned box (the glide) wrapping a clay pill
+   (the squash). One slot wide; translates by exactly one slot per step. */
+.segtab__thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / 2);
+  transform: translateX(calc(var(--active-index, 0) * 100%));
+  /* ease-out-quint: fast departure, soft weighty settle — reads as liquid. */
+  transition: transform 0.44s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.segtab__thumb::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-pill);
+  background: var(--accent-grad);
+  /* Rounded clay drop: a colored lift, a faint contact shadow, top gloss + an
+     inner bottom shade for spherical roundness, finished with a thin gold rim. */
+  box-shadow: 0 5px 14px -5px rgba(241, 94, 0, 0.5),
+    0 1.5px 3px rgba(43, 31, 24, 0.12), var(--inset-gloss),
+    inset 0 -4px 8px -2px rgba(160, 84, 4, 0.42), inset 0 0 0 1px var(--gold);
+  transform-origin: center;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Squash-stretch in flight: the drop widens as it travels, then settles. */
+.segtab__thumb[data-moving]::before {
+  transform: scaleX(1.12) scaleY(0.92);
+}
+
+.segtab__seg {
+  position: relative;
+  z-index: 1;
+  appearance: none;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* White text/icon on the orange clay thumb. */
+.segtab__seg--active {
+  color: var(--accent-text);
+}
+
+/* Press feedback only on the inactive segment (the active one rides the raised
+   thumb and shouldn't double-dip). */
+.segtab__seg:not(.segtab__seg--active):active {
+  transform: scale(0.96);
+  color: var(--accent);
+}
+
+.segtab__seg:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--accent);
+}
+
+.segtab__seg-icon {
+  flex: none;
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.segtab__seg--active .segtab__seg-icon {
+  transform: scale(1.05);
+  filter: drop-shadow(0 1px 1px rgba(241, 94, 0, 0.45));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segtab__thumb,
+  .segtab__thumb::before {
+    transition: none;
+  }
+}

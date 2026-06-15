@@ -15,6 +15,7 @@
 - `tapPower`
 - `fruitMult`
 - `energyRegen`
+- `vaultLevel` — уровень ветки апгрейда Vault (ёмкость хранилища стейкинга)
 - `referralCode`
 - `referrerId`
 - `createdAt`
@@ -25,7 +26,9 @@
 - `userId`
 - `currency` — `'coins' | 'energy'`
 - `amount` — со знаком (+/-)
-- `type` — `'tap' | 'fruit' | 'daily' | 'stake' | 'unstake' | 'referral' | 'upgrade'`
+- `type` — `'tap' | 'fruit' | 'daily' | 'stake' | 'unstake' | 'stake_yield' | 'stake_boost' | 'coupon_boost' | 'referral' | 'upgrade'`
+  - `stake`/`unstake` — движение принципала (досрочный штраф — отрицательной записью на `unstake`); `stake_yield` — минт дохода при клейме
+  - `coupon_boost` — списание монет за покупку купон-буста ([06](./06-coupon-game.md#буст-расходник))
 - `refId`
 - `createdAt`
 
@@ -55,13 +58,16 @@
 
 - `id`
 - `userId`
-- `amount`
-- `tier` — `'flex' | 'lock7' | 'lock30'`
-- `aprDaily`
+- `amount` — принципал (BigInt)
+- `tier` — `'flex' | 'lock'`
+- `rateDaily` — ставка тарифа (доля/день), снимок из `GameConfig` на момент стейка
+- `storageAccrued` — накопленный, но не собранный доход (BigInt), зажат `capacity`
 - `startedAt`
-- `lastAccrualAt`
-- `unlockAt`
+- `lastClaimAt` — момент последнего клейма/перезапуска накопления
+- `unlockAt` — только для `lock`
 - `status` — `'active' | 'closed'`
+
+Доход капает лениво от `lastClaimAt` и упирается в ёмкость хранилища `capacity` (растёт веткой апгрейда Vault, см. [08 — Стейкинг](./08-staking.md)).
 
 ## Referral
 

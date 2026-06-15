@@ -1,0 +1,202 @@
+// Lemur Tap — Prisma schema. Source of truth: spec/app/03-data-model.md.
+// Money is BIGINT (whole coins). energyUpdatedAt is epoch-ms (BigInt).
+// All reward/interest math floors to whole coins (done in app layer).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── User ────────────────────────────────────────────────────────────────────
+// Balances (coins/energy) live on the row for fast read/update.
+// LedgerEntry is the audit source of truth for coins; User.coins must always
+// reconcile to the sum of ledger entries (coins only — energy is never logged).
+model User {
+  id        String  @id @default(cuid())
+  telegramId String @unique
+  username  String?
+  isPremium Boolean @default(false)
+
+  // Whole coins. BIGINT.
+  coins BigInt @default(0)
+
+  // Lazy-regenerated energy snapshot (see spec/app/05).
+  energy          Int    @default(0)
+  // Epoch-ms timestamp of the last energy recompute.
+  energyUpdatedAt BigInt @default(0)
+
+  referralCode String  @unique
+  // Denormalized copy of Referral.referrerId; set once on first /auth.
+  referrerId   String?
+
+  // Optimistic-locking counter for balance mutations.
+  version Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  upgrades     UserUpgrade[]
+  ledger       LedgerEntry[]
+  dailyClaims  DailyBonusClaim[]
+  couponSessions CouponGameSession[]
+  stakes       Stake[]
+
+  // Referral relations (a user is referrer of many, referee of at most one).
+  referralsMade Referral[] @relation("Referrer")
+  referralAsReferee Referral? @relation("Referee")
+
+  @@map("users")
+}
+
+// ── UserUpgrade ───────────────────────────────────────────────────────────
+// Missing row ⇒ level 0. Effective stats derived from level + GameConfig.
+model UserUpgrade {
+  id     String @id @default(cuid())
+  userId String
+  // 'maxEnergy' | 'energyRegen' | 'couponMult' | 'vault'
+  type   String
+  level  Int    @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@map("user_upgrades")
+}
+
+// ── LedgerEntry ───────────────────────────────────────────────────────────
+// Full audit of coin movements. One game action ⇒ 0..1 entries.
+model LedgerEntry {
+  id     String @id @default(cuid())
+  userId String
+  // Signed whole coins.
+  amount BigInt
+  // 'coupon' | 'daily' | 'stake' | 'unstake' | 'stake_yield' | 'referral' | 'upgrade'
+  // (legacy 'tap'/'fruit' rows may still exist in historical data; readers tolerate them)
+  type   String
+  // For type='referral': 'join' | 'premium' | 'passive'; otherwise null.
+  refSource String?
+  // Reference to the originating entity (semantics by type); nullable.
+  refId     String?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("ledger_entries")
+}
+
+// ── DailyBonusClaim ───────────────────────────────────────────────────────
+// At most one claim per UTC day per user.
+model DailyBonusClaim {
+  id        String   @id @default(cuid())
+  userId    String
+  // UTC date of the claim (date-only part of the unique key).
+  claimDate DateTime @db.Date
+  // Actual streak length (uncapped).
+  streak    Int
+  claimedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, claimDate])
+  @@map("daily_bonus_claims")
+}
+
+// ── CouponGameSession ─────────────────────────────────────────────────────
+// At most one 'active' session per user (enforced by partial unique index, see
+// migration). seed is server-generated.
+model CouponGameSession {
+  id         String    @id @default(cuid())
+  userId     String
+  seed       String
+  startedAt  DateTime  @default(now())
+  // startedAt + COUPON_SESSION_DURATION + grace; finish refused after this.
+  expiresAt  DateTime
+  finishedAt DateTime?
+  score      Int       @default(0)
+  rewardCoins BigInt   @default(0)
+  // 'active' | 'finished' | 'rejected' | 'expired'
+  status     String    @default("active")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@map("coupon_game_sessions")
+}
+
+// ── Stake ─────────────────────────────────────────────────────────────────
+// Offline yield engine (spec/app/08). One active position per tier per user
+// (enforced by a partial unique index on (userId, tier) WHERE status='active',
+// added in migration). Both tiers are top-uppable in place.
+model Stake {
+  id     String @id @default(cuid())
+  userId String
+  // Locked principal (working capital; unchanged by accrual). BIGINT.
+  amount BigInt
+  // 'flex' | 'lock'
+  tier   String
+  // Snapshot of the daily yield rate at open time (immutable on config change).
+  rateDaily Decimal @db.Decimal(10, 8)
+  // Yield banked in storage, pending claim (capped at vault capacity). BIGINT.
+  storageAccrued BigInt @default(0)
+  startedAt    DateTime  @default(now())
+  // Anchor for incremental storage accrual: the last claim / accrual restart.
+  // Advanced on every fold (claim, top-up, unstake) alongside storageAccrued.
+  lastClaimAt  DateTime @default(now())
+  // null for flex; startedAt + termDays for locked.
+  unlockAt     DateTime?
+  closedAt     DateTime?
+  // 'active' | 'closed'
+  status       String    @default("active")
+
+  // Per-position boost levels (spec/app/08 §5). Bought for coins, bound to this
+  // position, reset to 0 on a new position (a closed row keeps its last levels).
+  //   rate     ⚡ multiplies the daily yield rate (×1.2 per level).
+  //   capacity 🗄 multiplies the storage cap (×1.5 per level).
+  //   unfreeze 🔓 reduces the early-exit penalty (−50% per level).
+  boostRateLevel     Int @default(0)
+  boostCapacityLevel Int @default(0)
+  boostUnfreezeLevel Int @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@map("stakes")
+}
+
+// ── Referral ──────────────────────────────────────────────────────────────
+// A user can be invited only once: unique(refereeId).
+// DB check referrerId <> refereeId added in migration (anti self-invite).
+model Referral {
+  id         String @id @default(cuid())
+  referrerId String
+  // unique — invited only once.
+  refereeId  String @unique
+  // One-off grant flags (idempotency).
+  joinBonusGranted    Boolean @default(false)
+  premiumBonusGranted Boolean @default(false)
+  createdAt  DateTime @default(now())
+
+  referrer User @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referee  User @relation("Referee", fields: [refereeId], references: [id], onDelete: Cascade)
+
+  @@index([referrerId, createdAt])
+  @@map("referrals")
+}
+
+// ── GameConfig ────────────────────────────────────────────────────────────
+// Versioned economy config row. App falls back to DEFAULT_GAME_CONFIG.
+// `data` holds the full GameConfig JSON (shape = @lemur/shared GameConfig).
+model GameConfig {
+  id        String   @id @default(cuid())
+  version   Int      @unique
+  data      Json
+  createdAt DateTime @default(now())
+
+  @@map("game_configs")
+}

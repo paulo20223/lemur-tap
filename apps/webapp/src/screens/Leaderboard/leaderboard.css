@@ -1,0 +1,283 @@
+/* Leaderboard — a dense warm-clay table.
+   Tiers (gold/silver/bronze) stay inside the warm palette: even the "silver"
+   is a warm pewter so the medals read as one family, not a metallic clash. */
+
+.lb {
+  --tier-gold: var(--gold-grad);
+  --tier-silver: linear-gradient(160deg, #efe9e1 0%, #cabfb2 52%, #ad9f90 100%);
+  --tier-bronze: linear-gradient(160deg, #efb487 0%, #cd803f 52%, #a85f28 100%);
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+.lb-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lb-head__sub {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ── Table card ─────────────────────────────────────────────────────────── */
+
+.lb-tablecard {
+  padding: 0 14px;
+  overflow: hidden; /* clip the sticky header to the card's rounded corners */
+}
+
+.lb-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Header — sticky so it stays as the table scrolls under it. */
+.lb-th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 12px 0 10px;
+  background: var(--card);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  box-shadow: inset 0 -1px 0 var(--hairline);
+}
+.lb-th--rank {
+  width: 48px;
+  text-align: center;
+}
+.lb-th--player {
+  text-align: left;
+}
+.lb-th--coins {
+  text-align: right;
+  width: 38%;
+  padding-right: 6px;
+}
+
+.lb-td {
+  padding: 9px 0;
+  vertical-align: middle;
+}
+.lb-tr:not(:last-child) .lb-td {
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* ── Rank cell ──────────────────────────────────────────────────────────── */
+
+.lb-td--rank {
+  text-align: center;
+}
+
+.lb-rank {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text-dim);
+  letter-spacing: -0.01em;
+}
+
+/* Medal badges for the top three — clay discs with a glossy lift. */
+.lb-rank[data-tier] {
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(120, 60, 4, 0.4);
+  box-shadow: 0 4px 9px -4px rgba(232, 134, 10, 0.5), var(--inset-gloss),
+    inset 0 -3px 6px -2px rgba(160, 84, 4, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+.lb-rank[data-tier='gold'] {
+  background: var(--tier-gold);
+}
+.lb-rank[data-tier='silver'] {
+  background: var(--tier-silver);
+  box-shadow: 0 4px 9px -4px rgba(140, 125, 108, 0.45), var(--inset-gloss),
+    inset 0 -3px 6px -2px rgba(140, 125, 108, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+.lb-rank[data-tier='bronze'] {
+  background: var(--tier-bronze);
+  box-shadow: 0 4px 9px -4px rgba(168, 95, 40, 0.5), var(--inset-gloss),
+    inset 0 -3px 6px -2px rgba(138, 77, 31, 0.32),
+    inset 0 0 0 1px rgba(255, 240, 226, 0.45);
+}
+
+/* ── Player cell ────────────────────────────────────────────────────────── */
+
+.lb-td--player {
+  min-width: 0;
+}
+
+.lb-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.lb-you-chip {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* ── Coins cell ─────────────────────────────────────────────────────────── */
+
+.lb-td--coins {
+  text-align: right;
+  padding-right: 6px;
+}
+
+.lb-coins {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+/* ── Viewer's own row ───────────────────────────────────────────────────── */
+
+/* Full-row tint, never a side stripe. Rounded by tinting the end cells. */
+.lb-tr--me .lb-td {
+  background: var(--accent-soft);
+  border-bottom-color: transparent;
+}
+.lb-tr--me .lb-td--rank {
+  border-top-left-radius: var(--radius-sm);
+  border-bottom-left-radius: var(--radius-sm);
+}
+.lb-tr--me .lb-td--coins {
+  border-top-right-radius: var(--radius-sm);
+  border-bottom-right-radius: var(--radius-sm);
+}
+.lb-tr--me .lb-rank:not([data-tier]),
+.lb-tr--me .lb-name,
+.lb-tr--me .lb-coins {
+  color: var(--accent-strong);
+}
+
+/* ── Pinned "your position" ─────────────────────────────────────────────── */
+
+.lb-you {
+  position: sticky;
+  bottom: calc(var(--nav-h) + var(--safe-bottom) + var(--gap) * 2);
+  z-index: 50;
+  margin-top: 2px;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 2px 16px;
+  box-shadow: var(--shadow-card), inset 0 0 0 1.5px var(--accent-soft);
+}
+
+.lb-table--pinned {
+  table-layout: fixed;
+}
+.lb-table--pinned .lb-td {
+  border-bottom: none;
+  padding: 10px 0;
+}
+.lb-table--pinned .lb-td--rank {
+  width: 48px;
+}
+.lb-table--pinned .lb-td--coins {
+  width: 38%;
+}
+
+.lb-tr--pinned .lb-rank:not([data-tier]),
+.lb-tr--pinned .lb-name,
+.lb-tr--pinned .lb-coins {
+  color: var(--accent-strong);
+}
+.lb-tr--pinned .lb-rank:not([data-tier]) {
+  background: var(--accent-soft);
+}
+
+/* ── Empty / error ──────────────────────────────────────────────────────── */
+
+.lb-empty,
+.lb-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 32px 24px;
+}
+
+.lb-empty__icon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  margin-bottom: 4px;
+  background: var(--card-sunken);
+  color: var(--accent);
+  box-shadow: var(--inset-gloss);
+}
+
+.lb-empty__title {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.lb-empty__hint {
+  max-width: 260px;
+  font-size: 13.5px;
+  color: var(--text-dim);
+}
+
+.lb-error p {
+  margin: 0 0 4px;
+  color: var(--text-dim);
+}
+
+/* ── Skeleton ───────────────────────────────────────────────────────────── */
+
+.lb-skeleton {
+  border-radius: var(--radius);
+  background: linear-gradient(
+    100deg,
+    var(--card-sunken) 30%,
+    #fff8f1 50%,
+    var(--card-sunken) 70%
+  );
+  background-size: 200% 100%;
+  animation: lb-shimmer 1.3s ease-in-out infinite;
+}
+
+.lb-skeleton--table {
+  height: 420px;
+  margin-top: 2px;
+}
+
+@keyframes lb-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}

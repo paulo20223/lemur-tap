@@ -1,0 +1,282 @@
+/* Profile + Friends — one page, two tabs.
+
+   The "quiet luxury" design system (warm near-white sheets, hairline structure,
+   a single precise orange accent, gold reserved strictly for the premium
+   signal) is defined ONCE here on .profile-page and inherited by BOTH panels.
+   referral.css consumes these very --ref-* tokens, so the two tabs read as a
+   single coherent page rather than two stitched-together screens. */
+
+.profile-page {
+  /* Shared palette: warm-tinted neutrals, never pure black/white. */
+  --ref-ink: #2a1f18;
+  --ref-ink-soft: #6c5d50;
+  --ref-ink-faint: #a0907f;
+  --ref-line: rgba(43, 31, 24, 0.08);
+  --ref-line-strong: rgba(43, 31, 24, 0.13);
+  --ref-surface: #fffdfb;
+  --ref-sunken: #faf2e8;
+  --ref-accent: #ff6300;
+  --ref-accent-wash: rgba(255, 99, 0, 0.09);
+  --ref-gold-ink: #a9750f;
+  --ref-gold-line: rgba(208, 138, 10, 0.4);
+  /* Soft, warm-tinted, layered lift — "if you can clearly see it, it's too
+     strong". Tinted toward the brand sienna, never cold grey. */
+  --ref-shadow:
+    0 1px 2px rgba(122, 74, 30, 0.025),
+    0 6px 16px -8px rgba(122, 74, 30, 0.04),
+    0 20px 36px -24px rgba(122, 74, 30, 0.06);
+  --ref-emboss: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  gap: 14px;
+}
+
+/* Accessible page heading without competing with the segmented control, which
+   is the page's visual header. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The segmented switcher itself is the shared <SegmentedToggle> component (loud
+   claymorphic pill, matching the Rewards page); it sits at the top of the page
+   and scrolls with the content. */
+
+/* ── Tab panels ─────────────────────────────────────────────────────────── */
+/* Each panel stacks its sheets; this replaces the per-screen .screen wrapper
+   the two views used to own. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Profile panel ──────────────────────────────────────────────────────── */
+/* Reuses the sheet primitive from referral.css (.ref-sheet) so both tabs share
+   one surface language; .prof-* are the identity/balance specifics. */
+
+.prof-id {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 11px;
+  text-align: center;
+}
+
+/* Telegram photo (or monogram fallback) credential disc; premium earns the
+   restrained gold ring. */
+.prof-avatar {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--ref-ink-soft);
+  background: var(--ref-sunken);
+  border: 1px solid var(--ref-line-strong);
+  box-shadow: var(--ref-emboss),
+    0 6px 16px -10px rgba(122, 74, 30, 0.18);
+  overflow: hidden;
+}
+
+.prof-avatar__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.prof-avatar[data-premium] {
+  color: var(--ref-gold-ink);
+  border-color: var(--ref-gold-line);
+  background: linear-gradient(
+    160deg,
+    rgba(255, 210, 122, 0.32),
+    rgba(255, 176, 32, 0.13)
+  );
+}
+
+.prof-name {
+  margin: 0;
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--ref-ink);
+  max-width: 22ch;
+  text-wrap: balance;
+}
+
+.prof-handle {
+  margin: -5px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ref-ink-soft);
+}
+
+/* Premium status pill — the one place gold is allowed to speak. */
+.prof-premium {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 1px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ref-gold-ink);
+  background: rgba(255, 176, 32, 0.12);
+  border: 1px solid var(--ref-gold-line);
+  border-radius: 999px;
+  padding: 5px 12px;
+}
+
+/* Two hairline-divided credentials: member-since and Lemur id. */
+.prof-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  margin-top: 6px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ref-line);
+}
+
+.prof-meta__item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0 14px;
+  text-align: center;
+}
+
+.prof-meta__item + .prof-meta__item {
+  border-left: 1px solid var(--ref-line);
+}
+
+.prof-meta__label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ref-ink-faint);
+}
+
+.prof-meta__value {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--ref-ink);
+}
+
+.prof-meta__value--mono {
+  font-family:
+    ui-monospace, 'SF Mono', 'JetBrains Mono', 'Roboto Mono', Menlo, monospace;
+  letter-spacing: 0.02em;
+  user-select: text;
+}
+
+/* ── Balance sheet (lead total + hairline energy meter) ─────────────────── */
+
+.prof-balance {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.prof-coins {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: -6px;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  color: var(--ref-ink);
+}
+
+.prof-coins svg {
+  flex: 0 0 auto;
+  filter: drop-shadow(0 3px 6px rgba(232, 134, 10, 0.12));
+}
+
+.prof-energy {
+  padding-top: 16px;
+  border-top: 1px solid var(--ref-line);
+}
+
+.prof-energy__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prof-energy__head svg {
+  flex: 0 0 auto;
+}
+
+.prof-energy__label {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ref-ink);
+}
+
+.prof-energy__count {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ref-ink-soft);
+}
+
+.prof-energy__count b {
+  color: var(--ref-ink);
+}
+
+/* Sunken track + warm accent fill; width is driven inline from live energy. */
+.prof-energy__track {
+  position: relative;
+  height: 10px;
+  margin-top: 11px;
+  border-radius: 999px;
+  background: var(--ref-sunken);
+  border: 1px solid var(--ref-line);
+  box-shadow: inset 0 1px 2px rgba(122, 74, 30, 0.07);
+  overflow: hidden;
+}
+
+.prof-energy__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffa24d 0%, #ff7a1a 55%, #f15e00 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.prof-energy__regen {
+  margin: 9px 0 0;
+  font-size: 12px;
+  color: var(--ref-ink-faint);
+}
+
+.prof-energy__regen b {
+  color: var(--ref-ink-soft);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prof-energy__fill {
+    transition: none;
+  }
+}

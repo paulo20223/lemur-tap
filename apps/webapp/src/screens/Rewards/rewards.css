@@ -1,0 +1,54 @@
+/* Rewards screen — the shell that hosts the Daily and Boosts panels.
+   Fixed full-height column: the toggle + balance row pins to the top, the body
+   fills the rest. Daily fits without scroll; Boosts scrolls inside the body so
+   the toggle never leaves the viewport. */
+
+.rewards {
+  height: 100%;
+}
+
+/* ── Top row: segmented toggle + coin balance ────────────────────────────── */
+
+.rewards__head {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+}
+
+/* The switcher is the shared <SegmentedToggle>; it grows to fill the row beside
+   the persistent balance. */
+.rewards__head .segtab {
+  flex: 1 1 auto;
+}
+
+/* Persistent coin balance — useful in both modes (Daily pays, Boosts spends). */
+.rewards__balance {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-card);
+  padding: 9px 15px 9px 11px;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.rewards__balance-coin {
+  flex: 0 0 auto;
+}
+
+/* ── Body: the active panel ──────────────────────────────────────────────── */
+
+.rewards__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  /* Boosts scrolls here; Daily fits and stays put. Reserve the gutter so the
+     panel width never jumps between the two views. */
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}

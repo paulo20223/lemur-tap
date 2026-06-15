@@ -24,7 +24,7 @@
 | TapModule | Батч-тап, расход энергии, rate-limit |
 | FruitGameModule | Старт/финиш сессии, валидация счёта |
 | DailyBonusModule | Стрик, клейм раз в UTC-сутки |
-| StakingModule | Stake/unstake, ленивое начисление |
+| StakingModule | Stake/claim/unstake, ленивое накопление с капом (Vault), штраф досрочного выхода |
 | ReferralModule | Реф-код, startapp, бонусы |
 | GameConfigModule | Конфиг экономики |
 

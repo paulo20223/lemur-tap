@@ -1,0 +1,900 @@
+/* Staking screen styles. Mobile-first, fixed white-orange claymorphic theme
+   built on the shared design tokens in src/styles.css.
+
+   This screen is tuned a notch "more expensive" than the rest of the app:
+   deeper layered elevation, top-edge sheen on raised surfaces, an embossed
+   vault watermark on the balance hero, a refined tier selector, and a
+   "liquid" storage fill with a travelling shimmer. All within the existing
+   warm-orange palette — no new colour roles. */
+
+/* Local motion + elevation language, scoped to this screen.
+   The "3D" reads from a SOLID warm bottom lip (the extruded card side) +
+   a soft warm ambient + a top inner gloss — the same claymorphic recipe the
+   shared .btn uses (--shadow-raised), tuned for large neutral surfaces. A
+   purely diffuse box-shadow looks flat; the solid offset edge is what pops. */
+.screenVars {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
+  --lift-1: inset 0 2px 2px rgba(255, 255, 255, 0.92),
+    0 6px 0 -1px #f2cfb5,
+    0 18px 26px -12px rgba(255, 122, 26, 0.4),
+    0 5px 10px -5px rgba(43, 31, 24, 0.14);
+  --lift-2: inset 0 2px 3px rgba(255, 255, 255, 0.96),
+    0 8px 0 -1px #efc9ac,
+    0 26px 44px -16px rgba(255, 122, 26, 0.46),
+    0 8px 15px -7px rgba(43, 31, 24, 0.16);
+}
+
+/* ── Balance hero ─────────────────────────────────────────────────────────── */
+
+.balanceCard {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background:
+    radial-gradient(135% 120% at 0% 0%, #ffffff 0%, var(--card) 58%);
+  box-shadow: var(--lift-2);
+}
+
+/* Hairline sheen along the very top edge — the "polished rim". */
+.balanceCard::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 40%;
+  background: var(--sheen);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.balanceTop {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gap);
+}
+
+.balanceLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.balanceLabel {
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.balanceRow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.balanceCoin {
+  flex: 0 0 auto;
+  filter: drop-shadow(0 3px 6px rgba(241, 94, 0, 0.28));
+}
+
+.balanceValue {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--text);
+}
+
+.vaultBadge {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  background: linear-gradient(165deg, #fff4ea 0%, var(--accent-soft) 100%);
+  color: var(--accent-strong);
+  box-shadow: var(--inset-gloss), 0 6px 14px -8px rgba(241, 94, 0, 0.5);
+}
+
+/* Secondary metrics below the headline balance — gives the hero substance. */
+.balanceStats {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hairline);
+}
+
+.balanceStat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.balanceStatLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.balanceStatRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.balanceStatValue {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.balanceStatAccent {
+  color: var(--accent-strong);
+}
+
+.balanceStatDivider {
+  width: 1px;
+  align-self: stretch;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--hairline) 22%,
+    var(--hairline) 78%,
+    transparent
+  );
+}
+
+/* ── Section titles ───────────────────────────────────────────────────────── */
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 8px 2px 0;
+  color: var(--text-dim);
+}
+
+/* A short accent rule that anchors the eyebrow heading. */
+.sectionTitle::before {
+  content: '';
+  width: 14px;
+  height: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-grad);
+}
+
+/* ── Tier cards ───────────────────────────────────────────────────────────── */
+
+.tiers {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 11px;
+}
+
+.tier {
+  position: relative;
+  overflow: hidden;
+  appearance: none;
+  text-align: left;
+  background: var(--card);
+  border: 1.5px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 15px 15px 16px;
+  cursor: pointer;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  box-shadow: var(--lift-1);
+  transition:
+    transform 0.16s var(--ease-out),
+    border-color 0.2s ease,
+    box-shadow 0.28s var(--ease-out);
+}
+
+.tier:active {
+  transform: translateY(2px);
+}
+
+.tierSelected {
+  border-color: var(--accent);
+  background: radial-gradient(130% 120% at 50% -10%, var(--accent-soft) 0%, var(--card) 68%);
+  box-shadow:
+    0 0 0 1px var(--accent) inset,
+    inset 0 2px 3px rgba(255, 255, 255, 0.85),
+    0 6px 0 -1px #ffc59a,
+    0 20px 34px -14px rgba(255, 99, 0, 0.5),
+    0 5px 11px -5px rgba(43, 31, 24, 0.14);
+}
+
+/* Diagonal sheen sweeping the selected card. */
+.tierSelected::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.55) 0%, transparent 42%);
+  pointer-events: none;
+}
+
+.tierTop {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tierName {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.tierGlyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  box-shadow: var(--inset-gloss);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.tierSelected .tierGlyph {
+  background: var(--accent-grad);
+  color: var(--accent-text);
+  box-shadow: var(--inset-gloss), 0 4px 10px -5px rgba(241, 94, 0, 0.6);
+}
+
+.tierRateRow {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.tierRate {
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--accent-strong);
+  line-height: 1;
+}
+
+.tierRateUnit {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.tierMeta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  line-height: 1.35;
+}
+
+.tierMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Tiny leading tick to structure the meta lines. */
+.tierMetaRow::before {
+  content: '';
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  flex: 0 0 auto;
+}
+
+/* ── Stake form ───────────────────────────────────────────────────────────── */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.amountRow {
+  display: flex;
+  gap: 9px;
+}
+
+.inputWrap {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.inputCoin {
+  position: absolute;
+  left: 13px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.input {
+  flex: 1 1 auto;
+  appearance: none;
+  background: var(--card-sunken);
+  border: 1.5px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 700;
+  padding: 14px 14px 14px 40px;
+  width: 100%;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(43, 31, 24, 0.05);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.input::placeholder {
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.input:focus {
+  border-color: var(--accent);
+  box-shadow:
+    inset 0 2px 4px rgba(43, 31, 24, 0.05),
+    0 0 0 3px rgba(255, 122, 26, 0.16);
+}
+
+.maxBtn {
+  flex: 0 0 auto;
+  appearance: none;
+  border: 1.5px solid var(--accent-soft);
+  background: var(--card);
+  color: var(--accent-strong);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0 17px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px -3px rgba(43, 31, 24, 0.12);
+  transition: transform 0.12s var(--ease-out), opacity 0.15s ease, box-shadow 0.18s ease;
+}
+
+.maxBtn:active {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+.maxBtn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.formMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.formError {
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.wide {
+  width: 100%;
+}
+
+/* ── Positions list ───────────────────────────────────────────────────────── */
+
+.positions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.position {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 100% 0%, #fffaf4 0%, var(--card) 60%);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--lift-1);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.position::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 34%;
+  background: var(--sheen);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.posHead {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.posTier {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.posTierIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  background: linear-gradient(165deg, #fff4ea 0%, var(--accent-soft) 100%);
+  color: var(--accent-strong);
+  box-shadow: var(--inset-gloss), 0 4px 10px -6px rgba(241, 94, 0, 0.4);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.badgeFlex {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.badgeLocked {
+  background: rgba(255, 176, 32, 0.2);
+  color: #b97400;
+}
+
+.posRate {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.posGrid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+}
+
+.posCell {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.posCellLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.posCellRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.posCellCoin {
+  flex: 0 0 auto;
+}
+
+.posCellValue {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.accrued {
+  color: var(--ok);
+  text-shadow: 0 0 14px rgba(31, 179, 107, 0.22);
+}
+
+/* Live "accruing" pulse next to the storage label. */
+.liveDot {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--ok);
+  box-shadow: 0 0 0 0 rgba(31, 179, 107, 0.5);
+  animation: livePulse 1.8s var(--ease-out) infinite;
+}
+
+@keyframes livePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(31, 179, 107, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(31, 179, 107, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(31, 179, 107, 0);
+  }
+}
+
+/* ── Vault storage fill ───────────────────────────────────────────────────── */
+
+.vault {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.vaultBar {
+  position: relative;
+  flex: 1 1 auto;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--card-sunken);
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 3px rgba(43, 31, 24, 0.12),
+    inset 0 0 0 1px rgba(43, 31, 24, 0.04);
+}
+
+.vaultFill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  border-radius: var(--radius-pill);
+  background: var(--accent-grad);
+  box-shadow: 0 0 10px -2px rgba(255, 99, 0, 0.55);
+  transition: transform 0.3s var(--ease-out);
+}
+
+.vaultFull {
+  background: linear-gradient(180deg, #ffb469 0%, #ff7a1a 50%, #f15e00 100%);
+  animation: fullGlow 2.4s ease-in-out infinite;
+}
+
+@keyframes fullGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 12px -2px rgba(255, 99, 0, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 20px 0 rgba(255, 99, 0, 0.85);
+  }
+}
+
+/* Travelling sheen, clipped to the current fill width. */
+.vaultShimmerClip {
+  position: absolute;
+  inset: 0 auto 0 0;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  pointer-events: none;
+}
+
+.vaultSheen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  background: linear-gradient(
+    100deg,
+    transparent 18%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 82%
+  );
+  background-size: 240% 100%;
+  animation: vaultShimmer 2.3s var(--ease-out) infinite;
+}
+
+@keyframes vaultShimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+.vaultMeta {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+/* ── Actions ──────────────────────────────────────────────────────────────── */
+
+.posActions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.claimBtn {
+  flex: 1 1 auto;
+}
+
+.unstakeBtn {
+  flex: 1 1 auto;
+}
+
+.unstakeLocked {
+  background: var(--card-sunken);
+  color: var(--text-dim);
+  box-shadow: inset 0 0 0 1.5px var(--hairline);
+}
+
+.lockedLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.unlockHint {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.unlockHintIcon {
+  flex: 0 0 auto;
+}
+
+/* ── Per-position boosts shop ─────────────────────────────────────────────── */
+
+.boosts {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 13px;
+  border-top: 1px solid var(--hairline);
+}
+
+.boostsHead {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.boostList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.boost {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--card-sunken);
+  box-shadow: inset 0 0 0 1px rgba(43, 31, 24, 0.04);
+}
+
+.boostIcon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: linear-gradient(165deg, #fff4ea 0%, var(--accent-soft) 100%);
+  color: var(--accent-strong);
+  box-shadow: var(--inset-gloss);
+}
+
+.boostInfo {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.boostName {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.boostLvl {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border-radius: var(--radius-pill);
+  padding: 1px 7px;
+}
+
+.boostEffect {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.boostBuy {
+  flex: 0 0 auto;
+  appearance: none;
+  border: 1.5px solid var(--accent-soft);
+  background: var(--card);
+  color: var(--accent-strong);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  min-width: 64px;
+  padding: 8px 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px -3px rgba(43, 31, 24, 0.12);
+  transition: transform 0.12s var(--ease-out), opacity 0.15s ease, box-shadow 0.18s ease;
+}
+
+.boostBuy:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+.boostBuy:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.boostBuyInner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+/* ── States ───────────────────────────────────────────────────────────────── */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 32px 20px;
+  background: radial-gradient(120% 100% at 50% 0%, #fffaf4 0%, var(--card) 62%);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--lift-1);
+  text-wrap: pretty;
+}
+
+.emptyIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: linear-gradient(165deg, #fff4ea 0%, var(--accent-soft) 100%);
+  color: var(--accent-strong);
+  box-shadow: var(--inset-gloss), 0 10px 22px -10px rgba(241, 94, 0, 0.45);
+}
+
+.errorBox {
+  text-align: center;
+  color: var(--danger);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 24px 12px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--lift-1);
+}
+
+.errorActions {
+  margin-top: 12px;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(31, 179, 107, 0.12);
+  color: var(--ok);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: inset 0 0 0 1px rgba(31, 179, 107, 0.18);
+}
+
+.toastIcon {
+  flex: 0 0 auto;
+}

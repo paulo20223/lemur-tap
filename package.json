@@ -1,0 +1,33 @@
+{
+  "name": "lemur-tap",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "build:shared": "pnpm -F @lemur/shared build",
+    "dev": "pnpm -r --parallel dev",
+    "dev:tunnel": "node scripts/dev-tunnel.mjs",
+    "back": "pnpm -F @lemur/api dev",
+    "front": "pnpm -F @lemur/webapp dev",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "prisma:generate": "pnpm -F @lemur/api prisma:generate",
+    "prisma:migrate": "pnpm -F @lemur/api prisma:migrate",
+    "prisma:seed": "pnpm -F @lemur/api prisma:seed"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "@swc/core",
+      "esbuild",
+      "@nestjs/core"
+    ]
+  }
+}

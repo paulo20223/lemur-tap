@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rewards preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <link rel="stylesheet" href="/src/screens/Rewards/rewards.css" />
+    <link rel="stylesheet" href="/src/screens/Daily/daily.css" />
+    <link rel="stylesheet" href="/src/screens/Upgrades/Upgrades.css" />
+    <style>
+      body {
+        display: flex;
+        gap: 28px;
+        padding: 28px;
+        background: #f0e6dc;
+      }
+      .frame {
+        position: relative;
+        width: 390px;
+        height: 780px;
+        border-radius: 30px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px -20px rgba(43, 31, 24, 0.4);
+        background: var(--bg);
+      }
+      .frame .app {
+        height: 100%;
+      }
+      .cap {
+        position: absolute;
+        top: 8px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font: 700 12px/1 var(--font-sans);
+        color: #b8a99c;
+        z-index: 200;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- icon defs reused across the page -->
+    <svg width="0" height="0" style="position: absolute">
+      <defs>
+        <linearGradient id="coinGrad-lemur" x1="5" y1="3" x2="19" y2="21" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#ffd27a" /><stop offset="0.5" stop-color="#ffb020" /><stop offset="1" stop-color="#e8860a" />
+        </linearGradient>
+        <radialGradient id="coinHi-lemur" cx="0.38" cy="0.32" r="0.5">
+          <stop offset="0" stop-color="#fff6df" stop-opacity="0.95" /><stop offset="1" stop-color="#fff6df" stop-opacity="0" />
+        </radialGradient>
+        <linearGradient id="energyGrad-lemur" x1="7" y1="2" x2="17" y2="22" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#ffb74d" /><stop offset="0.55" stop-color="#ff7a1a" /><stop offset="1" stop-color="#f15e00" />
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <script>
+      const C = `<svg width="W" height="W" viewBox="0 0 24 24" class="CLS" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="url(#coinGrad-lemur)"/><circle cx="12" cy="12" r="9.5" fill="url(#coinHi-lemur)"/><circle cx="12" cy="12" r="6.6" fill="none" stroke="#e8860a" stroke-opacity="0.5" stroke-width="1.3"/><path d="M12 8.2v7.6M10 9.7h3a1.6 1.6 0 0 1 0 3.2h-3M10 11.2h2.7" fill="none" stroke="#b96a06" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      const B = { fill: 'none', stroke: 'currentColor', 'stroke-width': 1.8, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+      function line(size, cls, inner) {
+        return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" class="${cls || ''}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+      }
+      const coin = (s, cls) => C.replaceAll('W', s).replace('CLS', cls || '');
+      const gift = (s, cls) => line(s, cls, '<path d="M4 11h16v8.5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V11Z"/><path d="M3 8h18v3H3z"/><path d="M12 8v12.5"/><path d="M12 8C9.5 8 7 7.4 7 5.6 7 4.4 8 3.5 9.2 3.5c1.7 0 2.8 2 2.8 4.5Z"/><path d="M12 8c2.5 0 5-.6 5-2.4 0-1.2-1-2.1-2.2-2.1-1.7 0-2.8 2-2.8 4.5Z"/>');
+      const bolt = (s, cls) => line(s, cls, '<path d="M13 3 5 13h5l-1 8 8-10h-5l1-8Z"/>');
+      const flame = (s, cls) => line(s, cls, '<path d="M12 3c.5 3-1.8 4.2-3.2 6.2A6 6 0 0 0 12 21a6 6 0 0 0 6-6c0-2.4-1.3-3.7-2.4-5.2-.9 1-1.6 1.4-2.3 1.4 1-2.6-.2-5.4-1.3-8.2Z"/><path d="M10.2 17.2a2 2 0 0 0 3.6-1.2c0-1-.8-1.6-1.3-2.4-.7.9-2.3 1.5-2.3 3.6Z"/>');
+      const trophy = (s, cls) => line(s, cls, '<path d="M7 4.5h10v4a5 5 0 0 1-10 0v-4Z"/><path d="M7 6H4.5v1.5A3 3 0 0 0 7 10.4M17 6h2.5v1.5A3 3 0 0 1 17 10.4"/><path d="M12 13.5V17M9 20h6M9.5 20a2.5 2.5 0 0 1 5 0"/>');
+      const clock = (s, cls) => line(s, cls, '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>');
+      const check = (s, cls) => line(s, cls, '<path d="m4.5 12.5 4.5 4.5 10.5-11"/>');
+      const lock = (s, cls) => line(s, cls, '<rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/><path d="M12 14.5v2.5"/>');
+      const energy = (s, cls) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" class="${cls || ''}" aria-hidden="true"><path d="M13 2.5 5.5 13.2a.9.9 0 0 0 .74 1.4H10l-1 7 8.9-11.2a.9.9 0 0 0-.73-1.45H12l1-6.45Z" fill="url(#energyGrad-lemur)" stroke="#e8860a" stroke-opacity="0.5" stroke-width="0.8" stroke-linejoin="round"/></svg>`;
+      const vault = (s, cls) => line(s, cls, '<rect x="3" y="4.5" width="18" height="15" rx="2.5"/><circle cx="11" cy="12" r="3.5"/><path d="M11 8.5v1.2M11 14.3v1.2M14.5 12h-1.2M8.7 12H7.5"/><path d="M18 9.5v5"/>');
+      const basket = (s, cls) => line(s, cls, '<path d="M8 9.5V8.5a4 4 0 0 1 8 0v1"/><path d="M3 9.5h18"/><path d="M4.4 9.5 5.7 18a2 2 0 0 0 1.98 1.7h8.64A2 2 0 0 0 18.3 18l1.3-8.5"/><path d="M9.3 11.6 9.9 17.6M14.7 11.6 14.1 17.6M12 11.6v6"/>');
+      const stake = (s, cls) => line(s, cls, '<path d="M12 3.5 20 7l-8 3.5L4 7l8-3.5Z"/><path d="M5 11v5.5l7 3 7-3V11"/><path d="M12 10.5v9"/>');
+      const friends = (s, cls) => line(s, cls, '<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 6a3 3 0 0 1 0 5.6"/><path d="M17 14.2A5.5 5.5 0 0 1 20.5 19"/>');
+
+      function navHtml(active) {
+        const items = [
+          ['Play', basket(20)],
+          ['Rewards', gift(20)],
+          ['Stake', stake(20)],
+          ['Friends', friends(20)],
+        ];
+        return `<nav class="nav" aria-label="Primary"><div class="nav__list" style="--active-index:${active}">
+          <div class="nav__indicator" aria-hidden></div>
+          ${items.map(([l, ic], i) => `<a class="nav__item ${i === active ? 'nav__item--active' : ''}"><span class="nav__icon">${ic}</span><span class="nav__label">${l}</span></a>`).join('')}
+        </div></nav>`;
+      }
+
+      function header(view) {
+        const seg = (v, label, ic, idx) => `<button class="rewards__seg ${v === view ? 'rewards__seg--active' : ''}" role="tab" aria-selected="${v === view}"><span class="rewards__seg-icon" style="display:inline-flex">${ic}</span>${label}</button>`;
+        const idx = view === 'daily' ? 0 : 1;
+        return `<header class="rewards__head">
+          <div class="rewards__toggle" role="tablist" style="--active-index:${idx}">
+            <span class="rewards__thumb" aria-hidden></span>
+            ${seg('daily', 'Daily', gift(17))}
+            ${seg('boosts', 'Boosts', bolt(17))}
+          </div>
+          <div class="rewards__balance num"><span class="rewards__balance-coin" style="display:inline-flex">${coin(18)}</span>1,000</div>
+        </header>`;
+      }
+
+      const DAY_LABELS = ['1', '2', '3', '4', '5', '6', '7+'];
+      const compact = ['500', '1k', '1.5k', '2.5k', '4k', '6k', '10k'];
+      function dailyBody() {
+        const activeDay = 4;
+        let nodes = '';
+        for (let i = 0; i < 7; i++) {
+          const dayNum = i + 1;
+          const isActive = dayNum === activeDay;
+          const isPast = dayNum < activeDay;
+          const isDone = isPast;
+          const isLocked = dayNum > activeDay;
+          const cls = ['daily__node', isActive ? 'daily__node--today' : '', isDone ? 'daily__node--done' : '', isLocked ? 'daily__node--locked' : ''].join(' ');
+          const dot = isDone ? check(16) : isLocked ? lock(14) : coin(17);
+          nodes += `<div class="${cls}"><div class="daily__dot">${dot}</div><div class="daily__node-reward num">${compact[i]}</div><div class="daily__node-day">Day ${DAY_LABELS[i]}</div></div>`;
+        }
+        return `<div class="daily">
+          <div class="daily__streak num"><span class="daily__streak-flame" style="display:inline-flex">${flame(15)}</span><span class="daily__streak-count">4</span><span class="daily__streak-label">day streak</span></div>
+          <section class="card daily__hero">
+            <div class="daily__medallion">${trophy(38)}</div>
+            <div class="daily__hero-label">Today's reward</div>
+            <div class="daily__hero-amount num"><span class="daily__coin" style="display:inline-flex">${coin(30)}</span>2,500</div>
+            <button class="btn btn--block daily__claim">Claim 2,500</button>
+            <p class="daily__note">Keep your streak going. Miss a day and it resets to Day 1.</p>
+          </section>
+          <div class="daily__rail" style="--progress:0.5">
+            <div class="daily__line"><div class="daily__line-fill"></div></div>
+            ${nodes}
+          </div>
+        </div>`;
+      }
+
+      function upg(icon, title, blurb, level, max, nowEff, nextEff, price, afford) {
+        const lvl = max ? `<span class="upg__max">MAX</span>` : `<span class="upg__lvl">Lv ${level}</span>`;
+        const effNext = max ? '' : `<span class="upg__arrow">→</span><span class="upg__effect-next num">${nextEff}</span>`;
+        const btn = max ? 'Maxed' : `<span class="upg__price num"><span class="upg__coin" style="display:inline-flex">${coin(20)}</span>${price}</span>`;
+        const hint = !max && !afford ? `<div class="upg__hint">Not enough coins</div>` : '';
+        return `<div class="card upg">
+          <div class="upg__top"><span class="upg__icon">${icon}</span>
+            <div class="upg__head"><div class="upg__title">${title}</div><div class="upg__blurb">${blurb}</div></div>
+            <div class="upg__level num">${lvl}</div></div>
+          <div class="upg__effect"><span class="upg__effect-now num">${nowEff}</span>${effNext}</div>
+          <button class="btn upg__buy" ${max || !afford ? 'disabled' : ''}>${btn}</button>
+          ${hint}
+        </div>`;
+      }
+      function boostsBody() {
+        return `<div class="upgrades"><div class="upgrades__list">
+          ${upg(energy(26), 'Max Energy', 'Size of your energy bar', 3, false, '1,200 max', '1,400 max', '800', true)}
+          ${upg(flame(26), 'Energy Regen', 'Energy restored per second', 2, false, '1 / sec', '1.5 / sec', '1,500', false)}
+          ${upg(coin(26), 'Coupon Multiplier', 'Bonus to coupon-game rewards', 4, false, '×1.8', '×2.0', '3,000', false)}
+          ${upg(vault(26), 'Vault Capacity', 'Daily offline yield you can bank', 6, true, '8,000 / day', '', '', false)}
+        </div></div>`;
+      }
+
+      function frame(label, view, body) {
+        return `<div class="frame"><div class="cap">${label}</div><div class="app"><main class="app__content"><div class="screen rewards">${header(view)}<div class="rewards__body">${body}</div></div></main>${navHtml(1)}</div></div>`;
+      }
+
+      document.body.insertAdjacentHTML('beforeend', frame('Daily view (default)', 'daily', dailyBody()));
+      document.body.insertAdjacentHTML('beforeend', frame('Boosts view', 'boosts', boostsBody()));
+    </script>
+  </body>
+</html>

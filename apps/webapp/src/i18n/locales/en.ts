@@ -1,0 +1,268 @@
+/**
+ * English dictionary — mirrors the structure of `ru.ts` (the source of truth).
+ *
+ * Typed as `Translations<typeof ru>`: the compiler enforces the same keys and
+ * the same leaf/namespace split, so a missing or misshapen entry is a build
+ * error. Plural leaves only need English's one/other forms.
+ */
+import type { Translations } from '../types';
+import type { ru } from './ru';
+
+export const en: Translations<typeof ru> = {
+  common: {
+    retry: 'Retry',
+    tryAgain: 'Try again',
+    loading: 'Loading…',
+    loadingMore: 'Loading…',
+    somethingWrong: 'Something went wrong.',
+    unknownError: 'Unknown error',
+  },
+
+  nav: {
+    play: 'Play',
+    rewards: 'Rewards',
+    ranks: 'Ranks',
+    stake: 'Stake',
+    profile: 'Profile',
+  },
+
+  boot: {
+    title: 'Lemur Tap',
+    cantStart: 'Couldn’t start',
+  },
+
+  errorBoundary: {
+    title: 'Something went wrong',
+    tryAgain: 'Try again',
+  },
+
+  coupon: {
+    title: 'Catch the coupons!',
+    description:
+      'Drag the lemur’s basket to catch falling brand coupons for {seconds} seconds. Rarer brands are worth more points.',
+    score: 'Score',
+    time: 'Time',
+    seconds: '{value}s',
+    energy: 'Energy',
+    starting: 'Starting…',
+    play: 'Play · {cost} energy',
+    playAgain: 'Play again · {cost} energy',
+    outOfEnergy: 'Out of energy',
+    needEnergy: 'Need {cost} energy (have {have}).',
+    rechargeHint: 'Recharge to {cost} energy to play again.',
+    loadingConfig: 'Loading game config…',
+    go: 'GO',
+    tallying: 'Tallying your catch…',
+    reward: 'Reward',
+    finalScore: 'Final score: {score}',
+    errors: {
+      insufficientEnergy: 'Not enough energy to start a round.',
+      sessionActive: 'You already have a round in progress.',
+      rateLimited: 'Too fast — give it a moment and try again.',
+      sessionRejected: 'Round rejected. No reward this time.',
+      sessionExpired: 'Round expired before it could be submitted.',
+      sessionNotFound: 'Round session not found.',
+      generic: 'Something went wrong. Please try again.',
+    },
+  },
+
+  rewards: {
+    daily: 'Daily',
+    boosts: 'Boosts',
+    sectionLabel: 'Rewards section',
+    yourCoins: 'Your coins',
+  },
+
+  daily: {
+    streakLabel: {
+      one: 'day streak',
+      other: 'day streak',
+    },
+    currentStreak: 'Current streak',
+    todayReward: 'Today’s reward',
+    nextReward: 'Next reward',
+    claiming: 'Claiming…',
+    claim: 'Claim {amount}',
+    claimedToday: 'Claimed today',
+    nextClaimIn: 'Next claim in {time}',
+    note: 'Keep your streak going. Miss a day and it resets to Day 1.',
+    day: 'Day {label}',
+    failedLoad: 'Failed to load daily bonus',
+    claimFailed: 'Claim failed, try again',
+  },
+
+  upgrades: {
+    branches: {
+      maxEnergy: {
+        title: 'Max Energy',
+        blurb: 'Size of your energy bar',
+        effect: '{value} max',
+      },
+      energyRegen: {
+        title: 'Energy Regen',
+        blurb: 'Energy restored per second',
+        effect: '{value} / sec',
+      },
+      couponMult: {
+        title: 'Coupon Multiplier',
+        blurb: 'Bonus to coupon-game rewards',
+        effect: '×{value}',
+      },
+      vault: {
+        title: 'Vault Capacity',
+        blurb: 'Daily offline yield you can bank',
+        effect: '{value} / day',
+      },
+    },
+    level: 'Lv {level}',
+    max: 'MAX',
+    maxed: 'Maxed',
+    buying: 'Buying…',
+    notEnoughCoins: 'Not enough coins',
+    empty: 'No upgrades available.',
+    failedLoad: 'Failed to load upgrades. Please try again.',
+    purchaseFailed: 'Purchase failed. Please try again.',
+    boost: {
+      title: 'Coupon Boost',
+      blurb: 'Refill energy for one attempt',
+      effect: '+{energy} energy',
+      buy: 'Buy boost',
+      buying: 'Buying…',
+    },
+  },
+
+  staking: {
+    title: 'Staking',
+    tiers: {
+      flex: 'Flex',
+      lock: 'Lock',
+    },
+    perDay: '/day',
+    noLock: 'No lock',
+    lockTerm: '{days}d lock',
+    min: 'min {amount}',
+    availableBalance: 'Available balance',
+    staked: 'Staked',
+    yieldPerDay: 'Yield / day',
+    chooseTier: 'Choose a tier',
+    amountAriaLabel: 'Amount to stake',
+    amountPlaceholder: 'Amount',
+    minPlaceholder: 'min {amount}',
+    formMeta: 'Min {amount} · {rate}/day',
+    positions: '{active}/{total} positions',
+    stakingInProgress: 'Staking…',
+    topUp: 'Top up {tier}',
+    stake: 'Stake {tier}',
+    activePositions: 'Active positions',
+    noPositions:
+      "No active positions yet. Stake some coins to bank passive yield while you're away.",
+    principal: 'Principal',
+    storage: 'Storage',
+    storageFillAria: 'Storage fill',
+    full: 'full',
+    locked: 'locked',
+    flexible: 'flexible',
+    claim: 'Claim {amount}',
+    working: 'Working…',
+    unstake: 'Unstake',
+    earlyExitHint: 'Early exit forfeits storage + penalty',
+    positionBoosts: 'Position boosts',
+    noBonus: 'no bonus',
+    boostEffect: '{sign}{pct}% {noun}',
+    boostMeta: {
+      rate: { label: 'Booster', noun: 'yield' },
+      capacity: { label: 'Expansion', noun: 'storage' },
+      unfreeze: { label: 'Unfreeze', noun: 'penalty' },
+    },
+    boostLevelUp: '{label}: level up.',
+    unlocked: 'unlocked',
+    confirmUnstake:
+      'This position is still locked. Unstaking now forfeits the banked storage and costs a {penalty} principal penalty. Continue?',
+    toastStaked: 'Staked {amount} in {tier}.',
+    toastToppedUp: 'Topped up {amount} in {tier}.',
+    toastClaimed: 'Claimed {amount} coins.',
+    toastNothingToClaim: 'Nothing to claim yet.',
+    toastReturned: 'Returned {amount} coins',
+    toastYield: '+{amount} yield',
+    toastPenalty: '(early penalty)',
+    errors: {
+      stakeLocked: 'Position is still locked.',
+      stakeNotFound: 'Position not found.',
+      insufficientCoins: 'Not enough coins.',
+      amountBelowMin: 'Below the tier minimum.',
+      unknownTier: 'Unknown tier.',
+      unknownBoost: 'Unknown boost.',
+      maxLevel: 'Boost is already maxed.',
+      loadingConfig: 'Loading config…',
+      enterAmount: 'Enter an amount.',
+      amountPositive: 'Amount must be positive.',
+      minimumFor: 'Minimum for {tier} is {amount}.',
+      notEnoughCoins: 'Not enough coins.',
+    },
+  },
+
+  leaderboard: {
+    title: 'Leaderboard',
+    rankedByCoins: 'Ranked by coins',
+    players: {
+      one: 'player',
+      other: 'players',
+    },
+    player: 'Player',
+    coins: 'Coins',
+    you: 'You',
+    yourPosition: 'Your position',
+    noRanks: 'No ranks yet',
+    noRanksHint: 'Catch coupons to bank coins. The first to climb sets the bar.',
+    failedLoad: 'Failed to load leaderboard',
+  },
+
+  referral: {
+    shareText: 'Join me in Lemur Tap and grab a welcome bonus!',
+    program: 'Referral program',
+    leadPrefix: 'Earn',
+    leadAccent: '10%',
+    leadSuffix: 'of every friend. Forever.',
+    sub: 'They join with a welcome bonus, and every coin they tap keeps paying you back.',
+    yourCode: 'Your code',
+    inviteLink: 'Invite link',
+    copy: 'Copy',
+    copied: 'Copied',
+    copyAria: 'Copy invite link',
+    copiedAria: 'Link copied',
+    shareInvite: 'Share invite',
+    totalEarned: 'Total earned',
+    ledgerJoin: 'Join',
+    ledgerPremium: 'Premium',
+    ledgerPassive: 'Passive 10%',
+    yourReferrals: 'Your referrals',
+    noReferrals: 'No referrals yet',
+    noReferralsHint: 'Share your link to start earning together.',
+    inviteFriend: 'Invite a friend',
+    premium: 'Premium',
+    loadMore: 'Load more',
+    failedLoad: 'Failed to load referrals',
+    failedLoadMore: 'Failed to load more',
+    lemurName: 'Lemur #{id}',
+  },
+
+  profile: {
+    title: 'Profile',
+    sectionsLabel: 'Profile sections',
+    tabProfile: 'Profile',
+    tabFriends: 'Friends',
+    anonName: 'Lemur {id}',
+    telegramPremium: 'Telegram Premium',
+    memberSince: 'Member since',
+    lemurId: 'Lemur ID',
+    coinBalance: 'Coin balance',
+    energy: 'Energy',
+    regenerates: 'Regenerates +{rate} / sec',
+  },
+
+  language: {
+    label: 'Language',
+    ru: 'Русский',
+    en: 'English',
+  },
+};

@@ -1,0 +1,33 @@
+version: '3'
+
+dotenv: ['.env']
+
+tasks:
+  mkm:
+    desc: Make migration — create migration SQL only if schema differs (no apply)
+    dir: apps/api
+    silent: true
+    cmds:
+      - |
+        if pnpm exec prisma migrate diff \
+          --from-url "$DATABASE_URL" \
+          --to-schema-datamodel prisma/schema.prisma \
+          --exit-code > /dev/null 2>&1; then
+          echo "No schema changes — nothing to migrate."
+        elif [ -n "{{.CLI_ARGS}}" ]; then
+          pnpm exec prisma migrate dev --create-only --name "{{.CLI_ARGS}}"
+        else
+          pnpm exec prisma migrate dev --create-only
+        fi
+
+  m:
+    desc: Migrate — apply pending migrations
+    dir: apps/api
+    cmds:
+      - pnpm exec prisma migrate deploy
+
+  seed:
+    desc: Seed GameConfig from DEFAULT_GAME_CONFIG
+    dir: apps/api
+    cmds:
+      - pnpm exec prisma db seed

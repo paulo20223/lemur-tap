@@ -25,13 +25,14 @@
 - `POST /daily/claim` → награда за день.
 
 ### Upgrades
-- `GET /upgrades` — уровни и цены апгрейдов.
-- `POST /upgrades/:type/buy` — покупка апгрейда.
+- `GET /upgrades` — уровни и цены апгрейдов (вкл. ветку `vault`).
+- `POST /upgrades/:type/buy` — покупка апгрейда (`tap_power | max_energy | energy_regen | fruit_mult | vault`).
 
 ### Staking
-- `GET /staking` — позиции + накопленное.
-- `POST /staking/stake` — `{ amount, tier }`.
-- `POST /staking/unstake` — `{ stakeId }`.
+- `GET /staking` — позиции (`flex`/`lock`), `storageAccrued`, `capacity`, `claimable`, `unlockAt`, текущие ставки.
+- `POST /staking/stake` — `{ amount, tier }` (`flex` пополняется; `lock` — новая позиция со своим `unlockAt`).
+- `POST /staking/claim` — `{ stakeId }` — собрать накопленное в кошелёк, обнулить хранилище (идемпотентно).
+- `POST /staking/unstake` — `{ stakeId }` — вернуть принципал; для `lock` до `unlockAt` — со штрафом (явное подтверждение на клиенте).
 
 ### Referral
 - `GET /referral` — код, ссылка, список рефералов, заработок.
