@@ -31,7 +31,7 @@ import {
   type SegmentOption,
 } from '../../components/SegmentedToggle';
 import { useT, type MessageKey } from '../../i18n';
-import { skinVariant, lemurSkinVars, LEMUR_SVG } from './skins';
+import { skinVariant, skinNameKey, lemurSkinVars, LEMUR_SVG } from './skins';
 import { basketVariant, BASKET_SVG } from './baskets';
 
 /** Which goods section is on screen — switched by the in-panel toggle. */
@@ -387,7 +387,12 @@ function SkinCard({
         <i className="pcard__sheen" aria-hidden />
       </span>
 
-      <div className="pcard__name">{skin.name}</div>
+      <div className="pcard__name">
+        {(() => {
+          const key = skinNameKey(skin.id);
+          return key ? t(key) : skin.name;
+        })()}
+      </div>
 
       {skin.equipped ? (
         <div className="pcard__status pcard__status--active">
